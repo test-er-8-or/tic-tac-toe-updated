@@ -362,19 +362,23 @@ If you go to your repository on GitHub and reload the page, you should see all y
 
 # Cleaning up the cruft
 
-There's one more thing we can do to get ready for the masterclass. Facebook's `create-react-app` is nice, but it adds a lot of cruft that we don't need. For example, the animated logo.
+There's one more thing we can do to get ready. Facebook's `create-react-app` is nice, but it adds a lot of cruft that we don't need. For example, the animated logo.
 
 Let's delete the files we don't need, and clean up the ones that remain, simplifying our code.
 
 In the `src` folder, delete the following files:
 
 * App.css
+* App.js
 * App.test.js
 * index.css
 * logo.svg
+
+And from the project root:
+
 * README.old.md
 
-Create a new folder called `components` in the `src` folder, then create an `App` folder inside the `components` folder, and, finally, move the `App.js` file into the `src/components/App` folder and rename it to `index.js`.
+Create a new folder called `components` in the `src` folder, then create an `App` folder inside the `components` folder, and, finally, create an `index.js` file into the `src/components/App`.
 
 Your folder and file structure should now look like this:
 
@@ -382,10 +386,10 @@ Your folder and file structure should now look like this:
 
 Now let's update the files to remove the code we no longer need and simplify the code that remains. Don't worry if none of this makes sense to you. All will be made clear in the masterclass! (OK, clearer.)
 
-In the `src/components/App/index.js` file, make it look like this:
+In the `src/components/App/index.js` file, add this code:
 
 ```javascript
-import React from 'react'
+import * as React from 'react'
 
 export default function App () {
   return <h1>Tic-Tac-Toe</h1>
@@ -394,25 +398,18 @@ export default function App () {
 
 Whoa! That's a lot simpler. No?
 
-Now add a file `index.js` in the `src/components` folder and make it look like this:
+Now update the `src/index.js` file (are you seeing a pattern with filenames here?) to look like this:
 
 ```javascript
-import App from './App'
+import * as React from 'react'
+import * as serviceWorker from './serviceWorker'
 
-export { App }
-```
-
-Then update the `src/index.js` file (are you seeing a pattern with filenames here?) to look like this:
-
-```javascript
-import React from 'react'
+import App from './components/App'
 import { render } from 'react-dom'
 
-import { App } from './components'
-import registerServiceWorker from './registerServiceWorker'
-
 render(<App />, document.getElementById('root'))
-registerServiceWorker()
+
+serviceWorker.unregister()
 ```
 
 Finally, look in the `public` folder for the `index.html` file and clean it up so that it looks like this (don't miss the change from "shortcut icon" to "icon"):
@@ -422,23 +419,23 @@ Finally, look in the `public` folder for the `index.html` file and clean it up s
 <html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="theme-color" content="#000000">
-  <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
-  <link rel="icon" href="%PUBLIC_URL%/favicon.ico">
+  <meta charset="utf-8" />
+  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta name="theme-color" content="#000000" />
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
   <title>Tic-Tac-Toe</title>
 </head>
 
 <body>
-  <noscript>
-    You need to enable JavaScript to run this app.
-  </noscript>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
   <div id="root"></div>
 </body>
 
 </html>
 ```
+
+In addition to cleaning up a little, we changed `rel="shortcut icon"` to `rel="icon"`, which is correct (Facebook gets it wrong). And we changed the title to "Tic-Tac-Toe". Otherwise, it's just neatening up.
 
 Let's test that it still works by running `yarn start` in the project's root folder (in our console, of course). The app should start and open itself in the browser. You should see this in your browser:
 
