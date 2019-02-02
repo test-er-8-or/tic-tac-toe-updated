@@ -209,7 +209,8 @@ git push
 OK, let's add our Square component now. First, create a `src/components/Square` folder and a `src/components/Square/index.js` file in it. Then add this code:
 
 ```javascript
-import React from 'react'
+import * as React from 'react'
+
 import styled from 'styled-components'
 
 const StyledSquare = styled.div`
@@ -238,23 +239,14 @@ Here we've imported React because we're using JSX. Our `Square` component uses t
 
 Let's see it in action and we'll see how it works, then we'll extend it a little.
 
-First, add it to `src/components/index.js`:
+Let's use it in our `src/components/App/index.js` file. We'll add in some temporary fake plays, too.
 
 ```javascript
-import App from './App'
-import Board from './Board'
-import Square from './Square'
+import * as React from 'react'
 
-export { App, Board, Square }
-```
-.
-Then we'll use it in our `src/components/App/index.js` file. We'll add in some temporary fake plays, too.
-
-```javascript
-import React from 'react'
+import Board from '../Board'
+import Square from '../Square'
 import styled from 'styled-components'
-
-import { Board, Square } from '..'
 
 const StyledApp = styled.div`
   display: grid;
