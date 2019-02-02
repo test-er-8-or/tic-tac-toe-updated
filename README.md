@@ -16,7 +16,7 @@ The code in each branch represents the state of the code _after_ completing the 
 
 There are a few drawbacks to this simple approach, but it works for now. Eventually, we'll move this tutorial to an actual learning management system, which will make it much easier to use.
 
-**There are three options for how to complete this tutorial.**
+**There are two options for how to complete this tutorial.**
 
 ## Option 1: Real world
 
@@ -71,20 +71,6 @@ git checkout -b step-02
 Now you've got code that represents the completion of Step 1 and _should work_. You're ready to start Step 2. Repeat as needed.
 
 **Reminder: you created a branch from _Step 1_ so that you can do the instructions in _Step 2_.**
-
-## Option 3: Do it online with CodeSandbox
-
-The other option is to jump to the next step in CodeSandbox and fork from it. Click on an option below to see:
-
-* [start with set up (step 0) completed, ready to start step 1](https://codesandbox.io/s/github/test-er-8-or/tic-tac-toe/tree/00-set-up)
-* [step 1 complete, ready to start step 2](https://codesandbox.io/s/github/test-er-8-or/tic-tac-toe/tree/01-add-the-game-board)
-* [step 2 complete, ready to start step 3](https://codesandbox.io/s/github/test-er-8-or/tic-tac-toe/tree/02-add-snapshots)
-* [step 3 complete, ready to start step 4](https://codesandbox.io/s/github/test-er-8-or/tic-tac-toe/tree/03-add-click-handler-and-player)
-* [step 4 complete, ready to start step 5](https://codesandbox.io/s/github/test-er-8-or/tic-tac-toe/tree/04-add-state-management)
-
-You can fork any of these online and then save your work. If you log in with GitHub, you get special super powers (try it and see). These are pulled directly from this repository, so if you see a little "Update available" yellow arrow in the upper right hand corner of the interface, click it to load the lastest code. Nice!
-
-We strongly recommend working with the real-world tools&mdash;GitHub, Visual Studio Code, iTerm2 or equivalent, etc.&mdash;but if you can't get them set up, go ahead and use the CodeSandbox.
 
 ## How to get the most out of this tutorial
 
@@ -151,27 +137,3 @@ There are a thousand ways you could build this Tic-Tac-Toe app. Is this the _bes
 Then you can try a slightly different approach. And then another. Vary it a bit this way or that. Try it with a different framework. Over time, you'll find what you like and you'll change your code accordingly. And that's as it should be. But right now, when you're first learning i, just do it _one way_. In short, either follow these instructions precisely, or choose a different tutorial. Don't try to diverge from the instructions until you're sure you understand them.
 
 The fifth-dan black belt can create her own style. The yellow-belt beginner who attempts this will only make a fool of himself. Follow the single, shortest path to the goal. Repeat until you know it blindfolded. Then seek nearby paths and continue this process until you can travel at will.
-
-## "But some choice you made is wrong!"
-
-This tutorial is an experiment with a new methodology for learning&mdash;really, a combination of many well-known, but often ignored, methods for learning. As such, it uses a very specific pedagogy. You may not like this approach. You may even _hate_ this approach. If that is the case, then I happily urge you to write your own tutorial following your own pedagogy. Hell, write a book about it. I am.
-
-But don't ask me to change this approach or rewrite this the way you'd prefer it. I didn't happen upon this approach by accident; neither did I just throw together a few techniques that sounded good. I've spent more than twenty years experimenting with and honing this pedagogy. I'm not likely to abandon it or change it on a whim, and certainly not on _your_ whim.
-
-But that doesn't mean that I'm not open to criticism or new ideas! I'm just not interested in [gratuitous](http://www.dictionary.com/browse/gratuitous) ones. If something really doesn't seem to work, and you think you know a better way, then by all means ask questions about it or suggest an alternative. I'm happy to learn new things. The goal here is not to do things _my_ way, but to do the _the best way I can discover_. But please, try this way before you rush to suggest another. You may be surprised.
-
-Also, bear in mind that I'm working with a large and diverse group of learners. What works for you, might not work as well for others. Ideally, all learning would be made-to-measure (another of the Munat Methods), but with an online tutorial such as this, that's simply not possible. Yet. I'm working on some ideas. So this is a shot fired at centre of mass.
-
-**To be clear: By putting this online and inviting you to take part in it, subject to the understanding above, I am creating a _social contract_ with you. That means that I have a responsibility to make sure this is an _effective_ use of your time. Anything else is simply disrespectful. I take that responsibility very seriously, so if something is really wrong, or simply does not work (within reason), then _please_ let me know and I'll fix it ASAP. I hope you find this tutorial as effective and efficient as I've intended it to be. In short, I've tried to write the tutorial that I wish I had had available to me when I was first learning JavaScript and React.**
-
-So have fun! Go forth and learn.
-
-## Start with the [set up](https://github.com/test-er-8-or/tic-tac-toe/tree/00-set-up)
-
-1. [Set up](https://github.com/test-er-8-or/tic-tac-toe/tree/00-set-up)
-1. [Add the game board](https://github.com/test-er-8-or/tic-tac-toe/tree/01-add-the-game-board)
-1. [Add snapshots](https://github.com/test-er-8-or/tic-tac-toe/tree/02-add-snapshots)
-1. [Add click-handler and player](https://github.com/test-er-8-or/tic-tac-toe/tree/03-add-click-handler-and-player)
-1. [Add state management](https://github.com/test-er-8-or/tic-tac-toe/tree/04-add-state-management)
-
-With more to come soon.
