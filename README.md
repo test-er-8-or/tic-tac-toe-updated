@@ -55,7 +55,7 @@ git add -A
 git status
 git commit -m "Add first pass at game board"
 git status
-git push
+git push --set-upstream origin 01-add-the-game-board
 git status
 ```
 
@@ -69,8 +69,9 @@ We'll start at the top. Let's begin by styling our `App` component. To do this, 
 
 First, we'll need to import the `styled-component` library at the top of our `src/components/App/index.js` file. Then we'll create a `StyledApp` component by using the `styled.div` method and passing it a [template string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Multi-line_strings). This utilises a new feature of JavaScript called [tagged templates](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates).
 
-```javascript
-import React from 'react'
+```jsx
+import * as React from 'react'
+
 import styled from 'styled-components'
 
 const StyledApp = styled.div`
@@ -109,13 +110,9 @@ If you check the browser, you should see this:
 
 Not much has changed (yet), but you can see that the font family has changed to Verdana (compare with the earlier screenshot), so our styles are being applied.
 
-We can also verify this by looking in the Chrome Devtools (or the equivalent in whatever browser you're using). If we look in the `<head>` element, we can see that the stylesheet has been extracted and injected into a `<style>` element, and that the class has a unique name:
+We can also verify this by looking in the Chrome Devtools (or the equivalent in whatever browser you're using). If we look in the `<head>` element, we can see that the stylesheet has been extracted and injected into a `<style>` element, and that the class has a unique name, and if we look in the body, we can see that this unique class has been applied to our App's `<div>` element:
 
-![CSS injected into the head element](./assets/chrome-devtools-stylesheet.png)
-
-And if we look in the body, we can see that this unique class has been applied to our App's `<div>` element:
-
-![Unique class added to our App div element](./assets/chrome-devtools-board.png)
+![CSS injected into the head element](./assets/chrome-devtools-elements.png)
 
 Sweet! Now let's create our Board component.
 
@@ -157,22 +154,13 @@ Some things to note:
 * Each row is `20vh` units high, and each column is `20vh` units wide. A `vh` unit is 1% of the height of the window, so each square will have height and width equal to 20% of the height of the window area.
 * The gap between the squares is set to 0 pixels.
 
-Let's add our `Board` export to our `src/components/index.js` file so that we can import it easily:
+Now let's import it into our `src/components/App/index.js` file so that we can use it:
 
-```javascript
-import App from './App'
-import Board from './Board'
+```jsx
+import * as React from 'react'
 
-export { App, Board }
-```
-
-And now let's import it into our `src/components/App/index.js` file so that we can use it:
-
-```javascript
-import React from 'react'
+import Board from '../Board'
 import styled from 'styled-components'
-
-import { Board } from '..'
 
 const StyledApp = styled.div`
   display: grid;

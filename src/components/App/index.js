@@ -1,9 +1,23 @@
 import * as React from 'react'
 
+import Board from '../Board'
+import styled from 'styled-components'
+
+const StyledApp = styled.div`
+  display: grid;
+  font-family: 'Verdana', sans-serif;
+  grid-template-areas: 'board';
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+`
+StyledApp.displayName = 'StyledApp'
+
 export default function App () {
   return (
-    <div>
-      <div>
+    <StyledApp>
+      <Board>
         <div>0</div>
         <div>1</div>
         <div>2</div>
@@ -13,7 +27,7 @@ export default function App () {
         <div>6</div>
         <div>7</div>
         <div>8</div>
-      </div>
-    </div>
+      </Board>
+    </StyledApp>
   )
 }
