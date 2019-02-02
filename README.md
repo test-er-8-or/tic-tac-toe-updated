@@ -410,15 +410,17 @@ We can improve this a bit. Let's do our first real refactor.
 First, we can use Javascript's [destructuring assignment](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment) feature to avoid having to say `props.` everywhere. Take our `src/components/Square/index.js` file. Isn't this cleaner?
 
 ```javascript
-import React from 'react'
+import * as React from 'react'
+
 import styled from 'styled-components'
 
 const StyledSquare = styled.div`
   border-color: hsla(0, 0%, 0%, 0.2);
   border-style: solid;
-  border-width: 0 ${({ index }) => (index % 3 === 2 ? 0 : '2px')}
-    ${({ index }) => (index < 6 ? '2px' : 0)} 0;
-  color: ${({ player }) => (player === 'x' ? 'hsla(6, 59%, 50%, 1)' : 'hsla(145, 63%, 32%, 1)')};
+  border-width: 0 ${props => (props.index % 3 === 2 ? 0 : '2px')}
+    ${props => (props.index < 6 ? '2px' : 0)} 0;
+  color: ${props =>
+    props.player === 'x' ? 'hsla(6, 59%, 50%, 1)' : 'hsla(145, 63%, 32%, 1)'};
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
@@ -444,17 +446,20 @@ The [times](http://ramdajs.com/repl/?v=0.25.0#?times%28i%20%3D%3E%20%60This%20is
 
 Let's use this in our `src/components/App/index.js` file to generate our board. We'll use an even/odd function to alternate between player X and player O as we create the squares:
 
-```javascript
-import React from 'react'
+```jsx
+import * as React from 'react'
+
+import Board from '../Board'
+import Square from '../Square'
 import styled from 'styled-components'
 import { times } from 'ramda'
 
-import { Board, Square } from '..'
+const NUMBER_OF_SQUARES = 9
 
 const makeSquares = () =>
   times(
     idx => <Square key={idx} index={idx} player={idx % 2 === 0 ? 'x' : 'o'} />,
-    9
+    NUMBER_OF_SQUARES
   )
 
 const StyledApp = styled.div`
@@ -471,9 +476,7 @@ StyledApp.displayName = 'StyledApp'
 export default function App () {
   return (
     <StyledApp>
-      <Board>
-        {makeSquares()}
-      </Board>
+      <Board>{makeSquares()}</Board>
     </StyledApp>
   )
 }
