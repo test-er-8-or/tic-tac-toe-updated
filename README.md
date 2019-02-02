@@ -1,394 +1,14 @@
-# Setup
+# Adding the game board
 
-**Very important note**: If you diverge from these instructions in any way and get stuck, we _may_ not be able to help you. There are too many things that could go wrong. So please, the first time through, follow instructions to the letter as much as possible. On a second or third time through (and we recommend you try this several times, digging deeper each time until it all becomes clear to you), you can start experimenting. But first time through, _by the book, please_.
+The first thing we'll do is to set up a game board. In this step, we're just going to create a visual board. We won't worry about updating the board, tracking players, or anything else. We'll just make a nice-looking tic-tac-toe board.
 
-## Node
+To do this, we're going to use [styled-components](https://www.styled-components.com/). The `styled-components` library makes it easy for us to create React components that carry their own CSS style with them. When the application is built, the `styled-components` library will automatically extract the CSS from each component, wrap it in a unique CSS class, and inject it into a stylesheet in the head of the HTML document, just like a regular CSS stylesheet. What's more, it will add that unique class name to the React component.
 
-First and foremost, you must have [node.js](https://nodejs.org/en/) installed. We run the Current version so it is best if you do too. (That is, don't install the LTS version unless you have to.)
+For more information on how this works and the whys, check out [this video by MaxStoiber](https://www.youtube.com/watch?v=bIK2NwoK9xk), the inventor of `styled-components`.
 
-## Yarn
-
-Once you have node.js installed, install [yarn](https://yarnpkg.com/en/docs/install). We'll be using yarn throughout the demo, so it will make it easier for you. However, if you're stuck on **npm**, then you're welcome to use it instead. But why not give Yarn a try? Kittens like it! Can't be all bad.
-
-## An IDE or code editor
-
-You'll need some way to write and edit code. We'll be using [Visual Studio Code](https://code.visualstudio.com/), the most popular code editor, and we highly recommend that you do, too, unless you are already very comfortable with another editor (e.g, Atom, Sublime Text). An IDE is really overkill for what we have planned, but if you can't live without one, then that's OK, too.
-
-Note: you don't have to uninstall or give up your favourite editor to use VSCode for this class. They can coexist peacefully!
-
-We'll be using a few extensions for VSCode during the class. We recommend that you install them, too. There are typically equivalents available for other code editors/IDEs if you're sticking with some other editor. Do a search.
-
-## Access to a terminal (console)
-
-If you're using Linux, you're probably very familiar with the terminal and the command line. If you're on a Mac, you can find it in the Applications > Utilities folder, but we recommend installing the wonderful [iTerm2](https://iterm2.com/). If you're on Windows, things get a bit trickier. We recommend [hyper](https://hyper.is/) from the wonderful folks at [Zeit](https://zeit.co/). We'll explain all the commands you'll need, so no worries there.
-
-You could also use the console built in to VSCode (or your preferred IDE/editor). But whatever you use, _make sure you have a working console_ (you can't complete these instructions without one).
-
-## ESLint
-
-We'll be using ESLint to check our code syntax. Wikipedia defines linter or lint thus: _tools that analyse source code to flag programming errors, bugs, stylistic errors, and suspicious constructs_. ESLint will help you to write better code.
-
-VSCode has an [ESLint extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint), as do most code editors. Go ahead and install this now.
-
-## Prettier
-
-We'll also be using a code formatter to format our code to [JavaScript Standard Style](https://standardjs.com/). This keeps our code style consistent across files and applications and makes it easier for others to read and understand our code.
-
-VSCode has a [Prettier-standard extension](https://marketplace.visualstudio.com/items?itemName=numso.prettier-standard-vscode). You can find similar extensions for other editors as well. If you're using VSCode, install this now.
-
-**You can get by without the linter and formatter**, but you'll probably be much happier with them. Just sayin'.
-
-## Babel JavaScript
-
-We're going to be using the hottest, newest JavaScript code to write our application, because, hey, we rock! We want our editor to highlight our syntax properly. We'll be using the Babel "transpiler" (don't ask) to convert our super-hot, ultra-modern code back to the stone age code used by most browsers. (Only slightly joking there.) So let's add an extension to make it easier to read that modern ES.next code: [Babel Javascript](https://marketplace.visualstudio.com/items?itemName=mgmcdermott.vscode-language-babel).
-
-## Git and GitHub
-
-You can skip this step if you just want to work locally on your own computer, but if you want us to look at your code, you'll need to put a copy online. The best way to do this (and to provide for [version control](https://en.wikipedia.org/wiki/Version_control) of your code) is with Git and GitHub. As you can see if you're reading this, that's what we use.
-
-To use [Git](https://git-scm.com/), you'll need to install it locally. Then sign up for a [GitHub](https://github.com/join) account if you don't already have one. Then click "Start a Project", verify your email address, and sign in.
-
-Next, go to your profile and click on the "Repositories" tab, then click the bright green "New" button.
-
-Give your repository a name such as `tic-tac-toe`. Add a description, maybe "Tic-Tac-Toe game"? Just a suggestion.
-
-Then check "Initialize this repository with a README". Under ".gitignore" select "Node". You can choose a license if you want to. Finally, click the green "Create repository" button.
-
-Now you have a Git repository on GitHub! Donc professionnel!
-
-We'll want to "clone" a copy of your repository to your local computer so you can use it. So click the "Clone or Download" button, then click the clipboard (icon) button to copy the URL to the clipboard. It's easier to use clone with HTTPS so make sure this is selected. 
-
-You have a terminal app, right? (See above.) Open it and in a folder somewhere (we use a folder called Workspace in our home folder to organise our work), clone the repository with:
-
-```bash
-git clone <paste-your-copied-url-here> && cd $_
-```
-
-That will clone your repository and change your working directory (`cd`) to the root folder of your repository. If you type `ls` (list) and hit Enter you should see your README file. If you've installed VSCode, you can now type `code .` and Enter to open this folder in Visual Studio Code. If you're using another editor or IDE, open your project folder in that.
-
-## Create-react-app
-
-We'll be using Facebook's [create-react-app](https://git-scm.com/) to create a basic React application instantly. It's magic! Then we'll modify that code to create a two-player Tic-Tac-Toe game. Fun, eh?
-
-You'll be using the command line for this installation (and to build your Tic-Tac-Toe app), so open your terminal/console.
-
-If you installed Yarn successfully, you can use it to install `create-react-app`:
-
-```bash
-yarn global add create-react-app
-```
-
-If you insist on sticking with `npm`, then use this:
-
-```bash
-npm i -g create-react-app
-```
-
-That installs `create-react-app` globally, so you can use it from the command line. Now let's create a scaffold for our Tic-Tac-Toe app.
-
-Did you create a Git repository and `cd` into the root folder above? If so, we'll use the current folder name (`.`) as the name of our app:
-
-```bash
-create-react-app .
-```
-
-Make sure your working directory is your Git repo root folder before you type that or your day will suddenly go suddenly very wrong.
-
-If you're not using Git, then you'll need to create the folder at the same time, then `cd` into it. We can do that like this:
-
-```bash
-create-react-app tic-tac-toe && cd $_
-```
-
-This will take a while. Make sure you're online because `create-react-app` will be downloading many dependencies from node. Hum a favourite song while you wait for it to finish its business.
-
-Once that process is complete, you should be able to see a host of files in your code editor. And you'll see something like this in your terminal:
-
-![Create-react-app success!](./assets/create-react-app.png)
-
-Now you can follow the instructions and use
-
-```bash
-yarn start
-```
-
-To start your new React app up. It should open the default home page in your browser at `http://localhost:3000/`. Here's what you can expect:
-
-![Default create-react-app home page](./assets/default-home.png)
-
-Très chic, non?
-
-In your terminal, hold the Control key down and hit the C key to stop your application.
-
-## Makin' it pretty
-
-`create-react-app` comes with ESLint already installed and configured. But we still need to install and configure `prettier-standard` if we're going to take advantage of automatic code formatting.
-
-From within your project root folder, type the following in the terminal:
-
-```bash
-yarn add -D prettier-standard
-```
-
-Whistle a happy tune while the process completes. (Or not, if whistling is not your thing.)
-
-Got it installed? OK, we'll need to add a script to our application to permit us to run the `prettier-standard` formatter from the command line. We'll do this in the `package.json` file, which is where we configure our application. So open `package.json` in your editor and add a line for a `format` command like this:
-
-```json
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "format": "prettier-standard 'src/**/*.js'",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  }
-```
-
-Save the changes to `package.json`. Now we can run our `prettier-standard` formatter any time we want from the command line. To test it, open `src/App.js` in your code editor. It should look like this:
+But first, let's just create a basic board. Currently, our `src/components/App/index.js` file looks like this:
 
 ```jsx
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
-
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
-}
-
-export default App;
-```
-
-We're now going to run `prettier-standard` to reformat all our code to JavaScript Standard Style. You won't see a big change, but one obvious one is that JSS does not use semicolons, so all the semicolons at the ends of lines should disappear.
-
-In the terminal, type the following and hit Enter:
-
-```bash
-yarn format
-```
-
-The output should look like this:
-
-![Running yarn format](./assets/yarn-format.png)
-
-Obviously, the location of the application directory will be different on your computer (unless your computer is a Mac called 'riggan'). And if you check your `src/App.js` file now, it should look like this:
-
-```jsx
-import React, { Component } from 'react'
-import React, { Component } from 'react'
-import logo from './logo.svg'
-import './App.css'
-
-class App extends Component {
-  render () {
-    return (
-      <div className='App'>
-        <header className='App-header'>
-          <img src={logo} className='App-logo' alt='logo' />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className='App-link'
-            href='https://reactjs.org'
-            target='_blank'
-            rel='noopener noreferrer'
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    )
-  }
-}
-
-export default App
-```
-
-Yeah! We don't need no semicolons! (Apologies to lovers of semicolons.)
-
-If you're using Git and GitHub, then we can set prettier to run every time we commit changes to our repository. This is optional! But it's nice, too.
-
-We'll use [`lint-staged`](https://github.com/okonet/lint-staged) and [`husky`](https://github.com/typicode/husky) to run `prettier-standard` and stage the changes every time we do a commit&mdash;before the commit runs. (If you're not familiar with Git and version control and don't know what a [commit](https://git-scm.com/docs/git-commit) is, don't worry. We'll cover that in the class.)
-
-First, we'll install our dependencies with yarn:
-
-```bash
-yarn add -D lint-staged husky --force
-```
-
-The `-D` flag installs these dependencies for "development" mode only&mdash;we won't need them in production.
-
-A Git "hook" is a way to "hook" into a git command and run some code either before or after the command runs. In this instance, we're going to hook into the `git commit` command and a) run `prettier-standard` to clean up our code, then b) run `git add` to stage any changes so they'll be included in the commit. Then we'll let the `git commit` go forward.
-
-We do this in our `package.json` file, which is where we configure and control our application. So open that file in your code editor and add this below the scripts:
-
-```json
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "src/**/*.js": [
-      "prettier-standard",
-      "git add"
-    ]
-  }
-```
-
-This tells `lint-staged` to run the following commands on all files below the `src` folder: First, `prettier-standard`, which does the same thing that our `yarn format` command did, namely, cleans up all the code in the `src` folder.
-
-Then `lint-staged` will run `git add`, which "stages" the modified files so they'll be included in the commit. After that, the commit runs as usual.
-
-In this manner we can automatically clean up our source code each and every time we commit changes to our repository. If you're not using a Git repository, skip this step, and just try to remember to run `yarn format` regularly before you deploy your code.
-
-And if you have all this working, then you're ready to move to the next step.
-
-If anything is not working, check the code in this repository (particularly the `package.json` file) and compare it to your own. It should look like this:
-
-```json
-{
-  "name": "tic-tac-toe",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "react": "^16.7.0",
-    "react-dom": "^16.7.0",
-    "react-scripts": "2.1.3"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "format": "prettier-standard 'src/**/*.js'",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "src/**/*.js": [
-      "prettier-standard",
-      "git add"
-    ]
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ],
-  "devDependencies": {
-    "husky": "^1.3.1",
-    "lint-staged": "^8.1.3",
-    "prettier-standard": "^9.1.1"
-  }
-}
-```
-
-## Committing our changes
-
-If you're using Git and GitHub, then there's one last step. Let's "commit" our changes and push them up to GitHub.
-
-First let's see what files have been created or altered:
-```bash
-git status
-``` 
-
-You should see a list of the files similar to:
-
-![Git add, commmit, and push](./assets/status-before-add.png)
-
-
-Next, you'll "stage" all the changes. That tells git to include them in the commit. You have to stage your changes before you can commit them:
-
-```bash
-git add -A
-```
-
-You can run ```git status``` again to see the files are now green, meaning they are staged and ready to commit.
-
-Then we'll commit them with a simple commit message:
-
-```bash
-git commit -m "Initial commit"
-```
-
-Finally, we can push our changes up to GitHub:
-
-```bash
-git push
-```
-
-You should see something like this:
-
-![Git set upstream origin](./assets/set-origin.png)
-
-This happens because we don't have this branch on our remote repository yet. Git helpfully gives you the line you need to run to create the remote branch and push your changes, so let's do that:
-
-```bash
-git push --set-upstream origin 00-set-up
-```
-
-You should now see this:
-
-![Git successful push](./assets/git-successful-push.png)
-
-If you go to your repository on GitHub and reload the page, you should see all your changes. Nifty, eh?
-
-# Cleaning up the cruft
-
-There's one more thing we can do to get ready. Facebook's `create-react-app` is nice, but it adds a lot of cruft that we don't need. For example, the animated logo.
-
-Let's delete the files we don't need, and clean up the ones that remain, simplifying our code.
-
-In the `src` folder, delete the following files:
-
-* App.css
-* App.js
-* App.test.js
-* index.css
-* logo.svg
-
-And from the project root:
-
-* README.old.md
-
-Create a new folder called `components` in the `src` folder, then create an `App` folder inside the `components` folder, and, finally, create an `index.js` file into the `src/components/App`.
-
-Your folder and file structure should now look like this:
-
-![Decruftified files](./assets/decruftified-files.png)
-
-Now let's update the files to remove the code we no longer need and simplify the code that remains. Don't worry if none of this makes sense to you. All will be made clear in the masterclass! (OK, clearer.)
-
-In the `src/components/App/index.js` file, add this code:
-
-```javascript
 import * as React from 'react'
 
 export default function App () {
@@ -396,224 +16,488 @@ export default function App () {
 }
 ```
 
-Whoa! That's a lot simpler. No?
+We'll replace the current output with a simple board made up of `div` elements. Make your `src/components/App/index.js` file look like this:
 
-Now update the `src/index.js` file (are you seeing a pattern with filenames here?) to look like this:
-
-```javascript
+```jsx
 import * as React from 'react'
-import * as serviceWorker from './serviceWorker'
 
-import App from './components/App'
-import { render } from 'react-dom'
-
-render(<App />, document.getElementById('root'))
-
-serviceWorker.unregister()
-```
-
-Finally, look in the `public` folder for the `index.html` file and clean it up so that it looks like this (don't miss the change from "shortcut icon" to "icon"):
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="utf-8" />
-  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <meta name="theme-color" content="#000000" />
-  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-  <title>Tic-Tac-Toe</title>
-</head>
-
-<body>
-  <noscript>You need to enable JavaScript to run this app.</noscript>
-  <div id="root"></div>
-</body>
-
-</html>
-```
-
-In addition to cleaning up a little, we changed `rel="shortcut icon"` to `rel="icon"`, which is correct (Facebook gets it wrong). And we changed the title to "Tic-Tac-Toe". Otherwise, it's just neatening up.
-
-Let's test that it still works by running `yarn start` in the project's root folder (in our console, of course). The app should start and open itself in the browser. You should see this in your browser:
-
-![New home page](./assets/new-home-page.png)
-
-And this in your console (terminal):
-
-![Running the app](./assets/running-the-app.png)
-
-If everything appears to be working, then use Control-C to stop the app. If not, recheck your code against the code in this repo to see where you've gone wrong.
-
-Once everything is working, we can do another commit and push:
-
-```bash
-git add -A
-git commit -m "Remove cruft"
-git push
-```
-
-It will look like this in the terminal:
-
-![Cruft commit push](./assets/cruft-commit-push.png)
-
-Check your code on GitHub by reloading the page and you should see all the latest changes there.
-
-# Adding a couple of utilities
-
-We'll be using a very functional style of coding and the latest best practices for our Tic-Tac-Toe app. Why not? So we're going to add a few libraries that we'll need later. Let's do it now.
-
-At the command line (and with your project root folder as the working directory), type the following and hit the Enter key:
-
-```bash
-yarn add ramda ramda-adjunct styled-components react-router redux react-redux redux-observable rxjs rxjs-compat redux-devtools-extension
-yarn add -D enzyme enzyme-adapter-react-16 enzyme-to-json jest-enzyme jest-styled-components react-test-renderer redux-mock-store
-```
-
-That should install those libraries. Then we'll do another commit and push:
-
-```bash
-git add -A
-git commit -m "Add ramda, ramda-adjunct, styled-components"
-git push
-```
-
-Your final `package.json` file should look like this (version numbers may vary):
-
-```json
-{
-  "name": "tic-tac-toe",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "ramda": "^0.26.1",
-    "ramda-adjunct": "^2.14.0",
-    "react": "^16.7.0",
-    "react-dom": "^16.7.0",
-    "react-redux": "^6.0.0",
-    "react-router": "^4.3.1",
-    "react-scripts": "2.1.3",
-    "redux": "^4.0.1",
-    "redux-devtools-extension": "^2.13.8",
-    "redux-observable": "^1.0.0",
-    "rxjs": "^6.4.0",
-    "rxjs-compat": "^6.4.0",
-    "styled-components": "^4.1.3"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "format": "prettier-standard 'src/**/*.js'",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "src/**/*.js": [
-      "prettier-standard",
-      "git add"
-    ]
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ],
-  "devDependencies": {
-    "enzyme": "^3.8.0",
-    "enzyme-adapter-react-16": "^1.8.0",
-    "enzyme-to-json": "^3.3.5",
-    "husky": "^1.3.1",
-    "jest-enzyme": "^7.0.1",
-    "jest-styled-components": "^6.3.1",
-    "lint-staged": "^8.1.3",
-    "prettier-standard": "^9.1.1",
-    "react-test-renderer": "^16.7.0",
-    "redux-mock-store": "^1.5.3"
-  }
+export default function App () {
+  return (
+    <div>
+      <div>
+        <div>0</div>
+        <div>1</div>
+        <div>2</div>
+        <div>3</div>
+        <div>4</div>
+        <div>5</div>
+        <div>6</div>
+        <div>7</div>
+        <div>8</div>
+      </div>
+    </div>
+  )
 }
 ```
 
-Congratulations! You're ready to rock and roll with React and Tic-Tac-Toe. See you at the Summer of Tech 2018 Masterclass.
+The outermost div will be our App, the first nested div will be our Board, and the nine divs nested in that one will be our nine Squares.
 
-You can also get a head start by reading up on these utilities:
+Save your changes and run `yarn start` then point your browser to [http://localhost:3000/](http://localhost:3000/) to see the changes. You should see something like these:
 
-## [ramda](http://ramdajs.com/)
+![First pass at the game board](./assets/first-pass-game-board.png)
 
-Ramda gives us a host of powerful functions for manipulating data. The [Ramda docs](http://ramdajs.com/docs/) can take a little getting used to, but the examples help a lot. And the [Ramda REPL](http://ramdajs.com/repl/) is a great place to play around with Ramda. You can [bookmark your code](http://ramdajs.com/repl/?v=0.25.0#?const%20colours%20%3D%20%5B%27red%27%2C%20%27yellow%27%2C%20%27green%27%2C%20%27cyan%27%2C%20%27blue%27%2C%20%27magenta%27%5D%0A%0Aconst%20fourLetter%20%3D%20filter%28pipe%28length%2C%20equals%284%29%29%29%0A%0AfourLetter%28colours%29) and come right back to it later or send the link to a friend.
+Doesn't look much like a tic-tac-toe board, does it. But don't worry, we'll fix that shortly. Notice that we've numbered the squares starting with zero. That's because were going to use a JavaScript array to keep track of our board's squares, and JavaScript array indices begin with 0.
 
-## [ramda-adjunct](https://char0n.github.io/ramda-adjunct/)
+Before we move on, let's do a commit:
 
-Ramda-adjunct adds a wealth of useful functions to Ramda so we don't have to rewrite them ourselves.
+```bash
+git add -A
+git status
+git commit -m "Add first pass at game board"
+git status
+git push
+git status
+```
 
-## [styled-components](https://www.styled-components.com/)
+If you're wondering what you're committing, you can check the status of your files at any time with `git status`. Before the files have been "staged" (marked to be included in the commit), they will appear in red and "unstaged". After you issue the `git add -A` (-A means all), they should appear as staged files in green. After you make the commit, `git status` should show that nothing has changed.
 
-Makes it easy for us to encapsulate our CSS styles in our components, and theme them as well.
+## Thinking in React
 
-You might also consider watching this [talk about styled-components](https://www.youtube.com/watch?v=bIK2NwoK9xk).
+React is all about building reusable components. Think of them as our own, bespoke HTML elements. What kind of components would we want here? Well, we have a game board that consists of nine squares, each of which can hold either an X or an O. So it seems reasonable that our `App` component would hold a `Board` component, and that our `Board` components would hold nine instances of a `Square` component.
 
-## [react-router](https://reacttraining.com/react-router/)
+We'll start at the top. Let's begin by styling our `App` component. To do this, we'll create a `StyledApp` component with `styled-components` and we'll use that in our `App` component.
 
-"React Router is a collection of navigational components that compose declaratively with your application."
+First, we'll need to import the `styled-component` library at the top of our `src/components/App/index.js` file. Then we'll create a `StyledApp` component by using the `styled.div` method and passing it a [template string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Multi-line_strings). This utilises a new feature of JavaScript called [tagged templates](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates).
 
-## [redux](https://redux.js.org/)
+```javascript
+import React from 'react'
+import styled from 'styled-components'
 
-Redux is a predictable state container for JavaScript apps.
+const StyledApp = styled.div`
+  display: grid;
+  font-family: 'Verdana', sans-serif;
+  grid-template-areas: 'board';
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+`
+StyledApp.displayName = 'StyledApp'
 
-## [react-redux](https://github.com/reactjs/react-redux)
+export default function App () {
+  return (
+    <StyledApp>
+      <div>
+        <div>0</div>
+        <div>1</div>
+        <div>2</div>
+        <div>3</div>
+        <div>4</div>
+        <div>5</div>
+        <div>6</div>
+        <div>7</div>
+        <div>8</div>
+      </div>
+    </StyledApp>
+  )
+}
+```
 
-The React bindings for Redux. (Makes Redux and React work together easily.)
+If you check the browser, you should see this:
 
-For the curious, [a video on react-redux by Dan Abramov](https://www.youtube.com/watch?v=VJ38wSFbM3A)
+![Updated board](./assets/updated-board.png)
 
-## [redux-observable](https://redux-observable.js.org/)
+Not much has changed (yet), but you can see that the font family has changed to Verdana (compare with the earlier screenshot), so our styles are being applied.
 
-"RxJS 5-based middleware for Redux. Compose and cancel async actions to create side effects and more."
+We can also verify this by looking in the Chrome Devtools (or the equivalent in whatever browser you're using). If we look in the `<head>` element, we can see that the stylesheet has been extracted and injected into a `<style>` element, and that the class has a unique name:
 
-## [rxjs](http://reactivex.io/rxjs/) [rxjs-compat](https://www.npmjs.com/package/rxjs-compat)
+![CSS injected into the head element](./assets/chrome-devtools-stylesheet.png)
 
-(Note: If you are running the latest Rx.js and node, you may not need the rxjs-compat library.)
+And if we look in the body, we can see that this unique class has been applied to our App's `<div>` element:
 
-"RxJS is a library for reactive programming using Observables, to make it easier to compose asynchronous or callback-based code."
+![Unique class added to our App div element](./assets/chrome-devtools-board.png)
 
-## [enzyme](http://airbnb.io/enzyme/)
+Sweet! Now let's create our Board component.
 
-"Enzyme is a JavaScript Testing utility for React that makes it easier to assert, manipulate, and traverse your React Components' output."
+First, we'll create a new folder under `src/components`. Call it `Board` and add an `index.js` file in it. We'll follow this pattern of naming the folder with the component name (in [PascalCase](http://wiki.c2.com/?PascalCase)), and using `index.js` for the file name (`index.js` files are loaded by default, so we can still use `import Board from './components/Board'` to import the Board component). Your folder/file hierarchy should look like this when you're done:
 
-## [enzyme-adapter-react-16](https://github.com/airbnb/enzyme/tree/master/packages/enzyme-adapter-react-16)
+![Folder hierarchy after adding Board component](./assets/folders-after-board-added.png)
 
-Just something Enzyme needs to work with React version 16. Don't worry about it.
+Then in the `src/components/Board/index.js` file, add the following:
 
-## [enzyme-to-json](https://github.com/adriantoine/enzyme-to-json)
+```javascript
+import styled from 'styled-components'
 
-Makes our Enzyme snapshots prettier. You'll see.
+const Board = styled.div`
+  align-self: center;
+  display: grid;
+  grid-area: board;
+  grid-gap: 0;
+  grid-template-areas: 'zero one two' 'three four five' 'six seven eight';
+  grid-template-columns: 20vh 20vh 20vh;
+  grid-template-rows: 20vh 20vh 20vh;
+  height: 60vh;
+  justify-self: center;
+  margin: auto;
+  width: 60vh;
+`
+Board.displayName = 'Board'
 
-## [jest-enzyme](https://github.com/FormidableLabs/enzyme-matchers)
+export default Board
+```
 
-Makes Enzyme work better with [Jest](https://facebook.github.io/jest/), which is what we'll be using for our tests.
+This is not a class in CSS, so we won't explain all the CSS we're using here. If you're interested, you can simply read more about [CSS Grid Layout](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout).
 
-## [jest-styled-components](https://github.com/styled-components/jest-styled-components)
+Some things to note:
 
-Jest utilities for working with Styled Components
+* We aren't using any [JSX](https://reactjs.org/docs/jsx-in-depth.html), so we don't need to import React (JSX is the JavaScript that looks like HTML in our files).
+* We create a styled `<div />` component by calling the `div` function from the `styled` library and passing it a template string. Template strings are multi-line strings delimited by the back tick (```) character.
+* We're using CSS Grid Layout to create a grid with three rows of three cells each. These cells will be our Squares.
+* We call the squares 'zero', 'one', 'two', etc., which corresponds to the square's index in an array (JavaScript array indices start at 0).
+* Each row is `20vh` units high, and each column is `20vh` units wide. A `vh` unit is 1% of the height of the window, so each square will have height and width equal to 20% of the height of the window area.
+* The gap between the squares is set to 0 pixels.
 
-## [react-test-renderer](https://reactjs.org/docs/test-renderer.html)
+Let's add our `Board` export to our `src/components/index.js` file so that we can import it easily:
 
-Allows us to "render" our React components for testing without having to have a browser. Much faster.
+```javascript
+import App from './App'
+import Board from './Board'
 
-## [redux-mock-store](http://arnaudbenard.com/redux-mock-store/)
+export { App, Board }
+```
 
-"A mock store for your testing your redux async action creators and middleware."
+And now let's import it into our `src/components/App/index.js` file so that we can use it:
 
-## [redux-devtools-extension](https://github.com/zalmoxisus/redux-devtools-extension)
+```javascript
+import React from 'react'
+import styled from 'styled-components'
 
-The coolest thing ever for tracking your application state. Time travelling!
+import { Board } from '..'
+
+const StyledApp = styled.div`
+  display: grid;
+  font-family: 'Verdana', sans-serif;
+  grid-template-areas: 'board';
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+`
+StyledApp.displayName = 'StyledApp'
+
+export default function App () {
+  return (
+    <StyledApp>
+      <Board>
+        <div>0</div>
+        <div>1</div>
+        <div>2</div>
+        <div>3</div>
+        <div>4</div>
+        <div>5</div>
+        <div>6</div>
+        <div>7</div>
+        <div>8</div>
+      </Board>
+    </StyledApp>
+  )
+}
+```
+
+Run `yarn start` and see what it looks like. (Or, if you've never bothered to shut the server down using `Control-c`, you can just check your browser and it should have updated automatically.) You should see something like this:
+
+![First CSS grid board](./assets/first-grid-board.png)
+
+Time for another commit:
+
+```bash
+git add -A
+git commit -m "Add CSS grid board with styled-components"
+git push
+```
+
+### Now for the Squares
+
+OK, let's add our Square component now. First, create a `src/components/Square` folder and a `src/components/Square/index.js` file in it. Then add this code:
+
+```javascript
+import React from 'react'
+import styled from 'styled-components'
+
+const StyledSquare = styled.div`
+  border-color: hsla(0, 0%, 0%, 0.2);
+  border-style: solid;
+  border-width: 2px;
+  color: gray;
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+`
+StyledSquare.displayName = 'StyledSquare'
+
+export default function Square (props) {
+  return (
+    <StyledSquare index={props.index} player={props.player}>
+      {props.player}
+    </StyledSquare>
+  )
+}
+```
+
+Here we've imported React because we're using JSX. Our `Square` component uses the `StyledSquare` component. This is so that we can pass the player in as a prop, and also pass it in as the "children" of the `StyledSquare`. That will add it to our div as a text element (the innerHTML of our div).
+
+Let's see it in action and we'll see how it works, then we'll extend it a little.
+
+First, add it to `src/components/index.js`:
+
+```javascript
+import App from './App'
+import Board from './Board'
+import Square from './Square'
+
+export { App, Board, Square }
+```
+.
+Then we'll use it in our `src/components/App/index.js` file. We'll add in some temporary fake plays, too.
+
+```javascript
+import React from 'react'
+import styled from 'styled-components'
+
+import { Board, Square } from '..'
+
+const StyledApp = styled.div`
+  display: grid;
+  font-family: 'Verdana', sans-serif;
+  grid-template-areas: 'board';
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+`
+StyledApp.displayName = 'StyledApp'
+
+export default function App () {
+  return (
+    <StyledApp>
+      <Board>
+        <Square index={0} player='x' />
+        <Square index={1} player='o' />
+        <Square index={2} player='x' />
+        <Square index={3} player='o' />
+        <Square index={4} player='x' />
+        <Square index={5} player='o' />
+        <Square index={6} player='x' />
+        <Square index={7} player='o' />
+        <Square index={8} player='x' />
+      </Board>
+    </StyledApp>
+  )
+}
+```
+
+We're getting closer! Here's what you should see now:
+
+![First pass at squares](./assets/first-pass-at-squares.png)
+
+Let's do a commit:
+
+```bash
+git add -A
+git commit -m "First pass at board squares"
+git push
+```
+
+Don't forget that you can use `git status` to check the status of your files: unstaged, staged for commit, or commited.
+
+## Adding polish
+
+OK, that doesn't look like a normal tic-tac-toe board, which looks a little like a # sign. We need to get rid of a few borders.
+
+Fortunately, we can change our styled components based on the props we're passing in. Take a look at this line in our `src/components/Square/index.js` file:
+
+```javascript
+border-width: 2px;
+```
+
+We only want _some_ borders to be this width, and the rest we want to be 0px wide, right?
+
+Can we make our board using only `border-bottom` and `border-right`? Let's think about it. Which squares would need a `border-bottom`? It would be the top six, right? Those are cells 0-5 in our array. In other words, every square in the board with an index less than 6 should have a bottom border of 2px. We could make a function to take the index and return the correct border width like this:
+
+```javascript
+index => index < 6 ? '2px' : 0
+```
+
+That is an arrow function expression that represents a function that takes one parameter, which we'll call `index` here, then compares that index with 6, and if it is less than 6, it returns the value right after the `?`, which is '2px'. If it is not less than six, it returns the value right after the `:`, which is 0. This is called a ternary operator because it has three parts: the condition, the value returned when the condition is true, and the value returned when the condition is false, in that order.
+
+Our `styled.div` function accepts a props object, and we can provide functions on those props to use in our tagged template.
+
+What about the right borders? A look at our numbered game board above shows us that we'd want the borders on our first two columns, which means squares 0, 3, and 6, and squares 1, 4, and 7, but not on squares 2, 5, and 8. What do these numbers have in common? The trick is to think about the repetition in our board. We have rows of three squares, so every three squares we repeat. So 3 is an important number.
+
+If we divide the indexes of the squares in the first column by 3, we get 0 remainder (0, 3, and 6 all divide evenly by 3). If we divide the indexes of the squares in the second column by 3, we get a remainder of 1, and if we do the same with the third column, we get a remainder of 2. So we _don't_ want to add right borders to those squares that have a remainder of 2 when their indexes are divided by 3:
+
+```javascript
+index => index % 3 === 2 ? 0 : '2px'
+```
+
+Here, `%` is the remainder operator. This function takes a parameter (call it `index`), and if it has a remainder of 2 when divided by 3, it returns 0, otherwise it returns '2px'.
+
+Let's put these in our code in `src/components/Square/index.js`, remembering that the order for border properties is top, right, bottom, left:
+
+```javascript
+import React from 'react'
+import styled from 'styled-components'
+
+const StyledSquare = styled.div`
+  border-color: hsla(0, 0%, 0%, 0.2);
+  border-style: solid;
+  border-width: 0
+    ${props => (props.index % 3 === 2 ? 0 : '2px')}
+    ${props => (props.index < 6 ? '2px' : 0)}
+    0;
+  color: gray;
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+`
+StyledSquare.displayName = 'StyledSquare'
+
+export default function Square (props) {
+  return (
+    <StyledSquare index={props.index} player={props.player}>
+      {props.player}
+    </StyledSquare>
+  )
+}
+```
+
+Check the browser, and we should see this:
+
+![Got the borders right](./assets/correct-borders.png)
+
+It worked! But the colours kind of suck. Let's use a red for the X values, and a green for the O values. Chistmassy, right?
+
+As we're also passing the `player` into the Square, we can use that prop to set the color:
+
+```javascript
+import React from 'react'
+import styled from 'styled-components'
+
+const StyledSquare = styled.div`
+  border-color: hsla(0, 0%, 0%, 0.2);
+  border-style: solid;
+  border-width: 0
+    ${props => (props.index % 3 === 2 ? 0 : '2px')}
+    ${props => (props.index < 6 ? '2px' : 0)}
+    0;
+  color: ${props => (props.player === 'x' ? 'hsla(6, 59%, 50%, 1)' : 'hsla(145, 63%, 32%, 1)')};
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+`
+StyledSquare.displayName = 'StyledSquare'
+
+export default function Square (props) {
+  return (
+    <StyledSquare index={props.index} player={props.player}>
+      {props.player}
+    </StyledSquare>
+  )
+}
+```
+
+And we have colours!
+
+![Squares with colours](./assets/player-colors.png)
+
+Good time to do a commit:
+
+```bash
+git add -A
+git commit -m "Improve the board squares"
+git push
+```
+
+## Clean up and refactoring
+
+We can improve this a bit. Let's do our first real refactor.
+
+First, we can use Javascript's [destructuring assignment](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment) feature to avoid having to say `props.` everywhere. Take our `src/components/Square/index.js` file. Isn't this cleaner?
+
+```javascript
+import React from 'react'
+import styled from 'styled-components'
+
+const StyledSquare = styled.div`
+  border-color: hsla(0, 0%, 0%, 0.2);
+  border-style: solid;
+  border-width: 0 ${({ index }) => (index % 3 === 2 ? 0 : '2px')}
+    ${({ index }) => (index < 6 ? '2px' : 0)} 0;
+  color: ${({ player }) => (player === 'x' ? 'hsla(6, 59%, 50%, 1)' : 'hsla(145, 63%, 32%, 1)')};
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+`
+StyledSquare.displayName = 'StyledSquare'
+
+export default function Square ({ index, player }) {
+  return (
+    <StyledSquare index={index} player={player}>
+      {player}
+    </StyledSquare>
+  )
+}
+```
+
+We can also generate our board squares instead of hand coding them. This will come in handy later when we want to actually change them as each player plays.
+
+To do this, we'll use a [ramda](http://ramdajs.com/) function.
+
+The [times](http://ramdajs.com/repl/?v=0.25.0#?times%28i%20%3D%3E%20%60This%20is%20Square%20%23%24%7Bi%7D%60%2C%209%29) function takes a function and an integer _n_, and returns an array of length _n_ in which each item is created by calling the function, which is passed the index of that cell in the array. So the first cell, the function is called with 0, the second cell it is called with 1, etc.
+
+Let's use this in our `src/components/App/index.js` file to generate our board. We'll use an even/odd function to alternate between player X and player O as we create the squares:
+
+```javascript
+import React from 'react'
+import styled from 'styled-components'
+import { times } from 'ramda'
+
+import { Board, Square } from '..'
+
+const makeSquares = () =>
+  times(
+    idx => <Square key={idx} index={idx} player={idx % 2 === 0 ? 'x' : 'o'} />,
+    9
+  )
+
+const StyledApp = styled.div`
+  display: grid;
+  font-family: 'Verdana', sans-serif;
+  grid-template-areas: 'board';
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+`
+StyledApp.displayName = 'StyledApp'
+
+export default function App () {
+  return (
+    <StyledApp>
+      <Board>
+        {makeSquares()}
+      </Board>
+    </StyledApp>
+  )
+}
+```
+
+Later, we'll extend this so that it handles our moves as they occur (and makes each cell clickable). But for now, this is enough. If you check your page, you should see that nothing has changed. But change the `idx % 2 === 0` above to `idx % 2 === 1` and you should see the X's and O's swap positions. (Then change it back&mdash;we're going to make a rule that the first player is always X. That's makes things simpler.)
