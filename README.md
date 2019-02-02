@@ -326,17 +326,16 @@ Here, `%` is the remainder operator. This function takes a parameter (call it `i
 
 Let's put these in our code in `src/components/Square/index.js`, remembering that the order for border properties is top, right, bottom, left:
 
-```javascript
-import React from 'react'
+```jsx
+import * as React from 'react'
+
 import styled from 'styled-components'
 
 const StyledSquare = styled.div`
   border-color: hsla(0, 0%, 0%, 0.2);
   border-style: solid;
-  border-width: 0
-    ${props => (props.index % 3 === 2 ? 0 : '2px')}
-    ${props => (props.index < 6 ? '2px' : 0)}
-    0;
+  border-width: 0 ${props => (props.index % 3 === 2 ? 0 : '2px')}
+    ${props => (props.index < 6 ? '2px' : 0)} 0;
   color: gray;
   font-size: 16vh;
   font-weight: bold;
@@ -363,18 +362,18 @@ It worked! But the colours kind of suck. Let's use a red for the X values, and a
 
 As we're also passing the `player` into the Square, we can use that prop to set the color:
 
-```javascript
-import React from 'react'
+```jsx
+import * as React from 'react'
+
 import styled from 'styled-components'
 
 const StyledSquare = styled.div`
   border-color: hsla(0, 0%, 0%, 0.2);
   border-style: solid;
-  border-width: 0
-    ${props => (props.index % 3 === 2 ? 0 : '2px')}
-    ${props => (props.index < 6 ? '2px' : 0)}
-    0;
-  color: ${props => (props.player === 'x' ? 'hsla(6, 59%, 50%, 1)' : 'hsla(145, 63%, 32%, 1)')};
+  border-width: 0 ${props => (props.index % 3 === 2 ? 0 : '2px')}
+    ${props => (props.index < 6 ? '2px' : 0)} 0;
+  color: ${props =>
+    props.player === 'x' ? 'hsla(6, 59%, 50%, 1)' : 'hsla(145, 63%, 32%, 1)'};
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
