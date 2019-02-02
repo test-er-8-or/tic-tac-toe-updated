@@ -1,0 +1,241 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components:Square matches the snapshot for player O in the top left square 1`] = `
+<StyledComponent
+  forwardedComponent={
+    Object {
+      "$$typeof": Symbol(react.forward_ref),
+      "attrs": Array [],
+      "componentStyle": ComponentStyle {
+        "componentId": "sc-bdVaJa",
+        "isStatic": false,
+        "rules": Array [
+          "
+  border-color: hsla(0, 0%, 0%, 0.2);
+  border-style: solid;
+  border-width: 0 ",
+          [Function],
+          "
+    ",
+          [Function],
+          " 0;
+  color: ",
+          [Function],
+          ";
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+",
+        ],
+      },
+      "displayName": "StyledSquare",
+      "foldedComponentIds": Array [],
+      "render": [Function],
+      "styledComponentId": "sc-bdVaJa",
+      "target": "div",
+      "toString": [Function],
+      "warnTooManyClasses": [Function],
+      "withComponent": [Function],
+    }
+  }
+  forwardedRef={null}
+  index={0}
+  player="o"
+>
+  o
+</StyledComponent>
+`;
+
+exports[`components:Square matches the snapshot for player X in the bottom left square 1`] = `
+<StyledComponent
+  forwardedComponent={
+    Object {
+      "$$typeof": Symbol(react.forward_ref),
+      "attrs": Array [],
+      "componentStyle": ComponentStyle {
+        "componentId": "sc-bdVaJa",
+        "isStatic": false,
+        "rules": Array [
+          "
+  border-color: hsla(0, 0%, 0%, 0.2);
+  border-style: solid;
+  border-width: 0 ",
+          [Function],
+          "
+    ",
+          [Function],
+          " 0;
+  color: ",
+          [Function],
+          ";
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+",
+        ],
+      },
+      "displayName": "StyledSquare",
+      "foldedComponentIds": Array [],
+      "render": [Function],
+      "styledComponentId": "sc-bdVaJa",
+      "target": "div",
+      "toString": [Function],
+      "warnTooManyClasses": [Function],
+      "withComponent": [Function],
+    }
+  }
+  forwardedRef={null}
+  index={6}
+  player="x"
+>
+  x
+</StyledComponent>
+`;
+
+exports[`components:Square matches the snapshot for player X in the bottom right square 1`] = `
+<StyledComponent
+  forwardedComponent={
+    Object {
+      "$$typeof": Symbol(react.forward_ref),
+      "attrs": Array [],
+      "componentStyle": ComponentStyle {
+        "componentId": "sc-bdVaJa",
+        "isStatic": false,
+        "rules": Array [
+          "
+  border-color: hsla(0, 0%, 0%, 0.2);
+  border-style: solid;
+  border-width: 0 ",
+          [Function],
+          "
+    ",
+          [Function],
+          " 0;
+  color: ",
+          [Function],
+          ";
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+",
+        ],
+      },
+      "displayName": "StyledSquare",
+      "foldedComponentIds": Array [],
+      "render": [Function],
+      "styledComponentId": "sc-bdVaJa",
+      "target": "div",
+      "toString": [Function],
+      "warnTooManyClasses": [Function],
+      "withComponent": [Function],
+    }
+  }
+  forwardedRef={null}
+  index={8}
+  player="x"
+>
+  x
+</StyledComponent>
+`;
+
+exports[`components:Square matches the snapshot for player X in the top left square 1`] = `
+<StyledComponent
+  forwardedComponent={
+    Object {
+      "$$typeof": Symbol(react.forward_ref),
+      "attrs": Array [],
+      "componentStyle": ComponentStyle {
+        "componentId": "sc-bdVaJa",
+        "isStatic": false,
+        "rules": Array [
+          "
+  border-color: hsla(0, 0%, 0%, 0.2);
+  border-style: solid;
+  border-width: 0 ",
+          [Function],
+          "
+    ",
+          [Function],
+          " 0;
+  color: ",
+          [Function],
+          ";
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+",
+        ],
+      },
+      "displayName": "StyledSquare",
+      "foldedComponentIds": Array [],
+      "render": [Function],
+      "styledComponentId": "sc-bdVaJa",
+      "target": "div",
+      "toString": [Function],
+      "warnTooManyClasses": [Function],
+      "withComponent": [Function],
+    }
+  }
+  forwardedRef={null}
+  index={0}
+  player="x"
+>
+  x
+</StyledComponent>
+`;
+
+exports[`components:Square matches the snapshot for player X in the top right square 1`] = `
+<StyledComponent
+  forwardedComponent={
+    Object {
+      "$$typeof": Symbol(react.forward_ref),
+      "attrs": Array [],
+      "componentStyle": ComponentStyle {
+        "componentId": "sc-bdVaJa",
+        "isStatic": false,
+        "rules": Array [
+          "
+  border-color: hsla(0, 0%, 0%, 0.2);
+  border-style: solid;
+  border-width: 0 ",
+          [Function],
+          "
+    ",
+          [Function],
+          " 0;
+  color: ",
+          [Function],
+          ";
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+",
+        ],
+      },
+      "displayName": "StyledSquare",
+      "foldedComponentIds": Array [],
+      "render": [Function],
+      "styledComponentId": "sc-bdVaJa",
+      "target": "div",
+      "toString": [Function],
+      "warnTooManyClasses": [Function],
+      "withComponent": [Function],
+    }
+  }
+  forwardedRef={null}
+  index={2}
+  player="x"
+>
+  x
+</StyledComponent>
+`;

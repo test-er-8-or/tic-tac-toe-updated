@@ -5,6 +5,6 @@ import { shallow } from 'enzyme'
 
 describe('components:App', () => {
   it('matches the snapshot', () => {
-    expect(toJson(shallow(<App />))).toMatchSnapshot()
+    expect(toJson(shallow(<App />).dive())).toMatchSnapshot()
   })
 })

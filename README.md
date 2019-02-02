@@ -140,13 +140,13 @@ git push
 Create `src/components/Board/index.spec.js` and add the following code:
 
 ```javascript
-import React from 'react'
+import * as React from 'react'
+
+import Board from './'
 import { shallow } from 'enzyme'
 
-import Board from '.'
-
 describe('components:Board', () => {
-  it('renders the Board with the proper styles', () => {
+  it('matches the snapshot', () => {
     expect(toJson(shallow(<Board />))).toMatchSnapshot()
   })
 })
@@ -154,13 +154,20 @@ describe('components:Board', () => {
 
 Then run `yarn test` and let's see what the snapshot looks like. If we check `src/components/Board/__snapshots__/index.spec.js.snap`, we find:
 
-```javascript
+```jsx
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components:Board renders the Board with the proper styles 1`] = `
-.c0 {
-  -webkit-align-self: center;
-  -ms-flex-item-align: center;
+exports[`components:Board matches the snapshot 1`] = `
+<StyledComponent
+  forwardedComponent={
+    Object {
+      "$$typeof": Symbol(react.forward_ref),
+      "attrs": Array [],
+      "componentStyle": ComponentStyle {
+        "componentId": "sc-bdVaJa",
+        "isStatic": true,
+        "rules": Array [
+          "
   align-self: center;
   display: grid;
   grid-area: board;
@@ -172,10 +179,20 @@ exports[`components:Board renders the Board with the proper styles 1`] = `
   justify-self: center;
   margin: auto;
   width: 60vh;
-}
-
-<div
-  className="c0"
+",
+        ],
+      },
+      "displayName": "Board",
+      "foldedComponentIds": Array [],
+      "render": [Function],
+      "styledComponentId": "sc-bdVaJa",
+      "target": "div",
+      "toString": [Function],
+      "warnTooManyClasses": [Function],
+      "withComponent": [Function],
+    }
+  }
+  forwardedRef={null}
 />
 `;
 ```
@@ -186,14 +203,14 @@ You can see that `jest-styled-components` has included our CSS styles. Now, when
 
 Let's add the `Square` snapshot test next. In `src/components/Square/index.spec.js` add this code:
 
-```javascript
-import React from 'react'
+```jsx
+import * as React from 'react'
+
+import Square from './'
 import { shallow } from 'enzyme'
 
-import Square from '.'
-
 describe('components:Square', () => {
-  it('renders the Square with the proper styles', () => {
+  it('matches the snapshot', () => {
     expect(toJson(shallow(<Square />))).toMatchSnapshot()
   })
 })
@@ -206,7 +223,7 @@ Now `src/components/Square/__snapshots__/index.spec.js.snap` looks like this:
 ```javascript
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components:Square renders the Square with the proper styles 1`] = `<styled.div />`;
+exports[`components:Square matches the snapshot 1`] = `<StyledSquare />`;
 ```
 
 Not very useful, is it? That's because we've wrapped our StyledDiv in another component. Our shallow render only goes one deep! What can we do?
@@ -214,13 +231,13 @@ Not very useful, is it? That's because we've wrapped our StyledDiv in another co
 Let's modify the test to `dive` into that component:
 
 ```javascript
-import React from 'react'
+import * as React from 'react'
+
+import Square from './'
 import { shallow } from 'enzyme'
 
-import Square from '.'
-
 describe('components:Square', () => {
-  it('renders the Square with the proper styles', () => {
+  it('matches the snapshot', () => {
     expect(toJson(shallow(<Square />).dive())).toMatchSnapshot()
   })
 })
@@ -230,24 +247,50 @@ Run our test again (or did they run automatically?), and _they fail!_
 
 Well, of course they do! We changed the snapshot, right? That's what they're supposed to do. So now let's hit `u` to update the snapshot, and they should pass. Check the `src/components/Square/__snapshots__/index.spec.js.snap` file again and you should see this:
 
-```javascript
+```jsx
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components:Square renders the Square with the proper styles 1`] = `
-.c0 {
-  border-color: hsla(0,0%,0%,0.2);
+exports[`components:Square matches the snapshot 1`] = `
+<StyledComponent
+  forwardedComponent={
+    Object {
+      "$$typeof": Symbol(react.forward_ref),
+      "attrs": Array [],
+      "componentStyle": ComponentStyle {
+        "componentId": "sc-bdVaJa",
+        "isStatic": false,
+        "rules": Array [
+          "
+  border-color: hsla(0, 0%, 0%, 0.2);
   border-style: solid;
-  border-width: 0 2px 0 0;
-  color: hsla(145,63%,32%,1);
+  border-width: 0 ",
+          [Function],
+          "
+    ",
+          [Function],
+          " 0;
+  color: ",
+          [Function],
+          ";
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
   text-align: center;
   text-transform: uppercase;
-}
-
-<div
-  className="c0"
+",
+        ],
+      },
+      "displayName": "StyledSquare",
+      "foldedComponentIds": Array [],
+      "render": [Function],
+      "styledComponentId": "sc-bdVaJa",
+      "target": "div",
+      "toString": [Function],
+      "warnTooManyClasses": [Function],
+      "withComponent": [Function],
+    }
+  }
+  forwardedRef={null}
 />
 `;
 ```
@@ -256,38 +299,38 @@ That's more like it. But doesn't our colour change depending on player? Doesn't 
 
 How about more snapshots? Update your `src/components/Square/index.spec.js` file to look like this:
 
-```javascript
-import React from 'react'
+```jsx
+import * as React from 'react'
+
+import Square from './'
 import { shallow } from 'enzyme'
 
-import Square from '.'
-
 describe('components:Square', () => {
-  it('renders the Square with the proper styles for player O in the top left square', () => {
+  it('matches the snapshot for player O in the top left square', () => {
     expect(
       toJson(shallow(<Square player='o' index={0} />).dive())
     ).toMatchSnapshot()
   })
 
-  it('renders the Square with the proper styles for player X in the top left square', () => {
+  it('matches the snapshot for player X in the top left square', () => {
     expect(
       toJson(shallow(<Square player='x' index={0} />).dive())
     ).toMatchSnapshot()
   })
 
-  it('renders the Square with the proper styles for player X in the top right square', () => {
+  it('matches the snapshot for player X in the top right square', () => {
     expect(
       toJson(shallow(<Square player='x' index={2} />).dive())
     ).toMatchSnapshot()
   })
 
-  it('renders the Square with the proper styles for player X in the bottom left square', () => {
+  it('matches the snapshot for player X in the bottom left square', () => {
     expect(
       toJson(shallow(<Square player='x' index={6} />).dive())
     ).toMatchSnapshot()
   })
 
-  it('renders the Square with the proper styles for player X in the bottom right square', () => {
+  it('matches the snapshot for player X in the bottom right square', () => {
     expect(
       toJson(shallow(<Square player='x' index={8} />).dive())
     ).toMatchSnapshot()
@@ -297,127 +340,269 @@ describe('components:Square', () => {
 
 Rerun the tests, updating with `u` until they're all passing. Your `src/components/Square/__snapshots__/index.spec.js.snap` should look something like this (note: your order may vary as tests are run in random order):
 
-```javascript
+```jsx
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components:Square renders the Square with the proper styles for player O in the top left square 1`] = `
-.c0 {
-  border-color: hsla(0,0%,0%,0.2);
+exports[`components:Square matches the snapshot for player O in the top left square 1`] = `
+<StyledComponent
+  forwardedComponent={
+    Object {
+      "$$typeof": Symbol(react.forward_ref),
+      "attrs": Array [],
+      "componentStyle": ComponentStyle {
+        "componentId": "sc-bdVaJa",
+        "isStatic": false,
+        "rules": Array [
+          "
+  border-color: hsla(0, 0%, 0%, 0.2);
   border-style: solid;
-  border-width: 0 2px 2px 0;
-  color: hsla(145,63%,32%,1);
+  border-width: 0 ",
+          [Function],
+          "
+    ",
+          [Function],
+          " 0;
+  color: ",
+          [Function],
+          ";
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
   text-align: center;
   text-transform: uppercase;
-}
-
-<div
-  className="c0"
+",
+        ],
+      },
+      "displayName": "StyledSquare",
+      "foldedComponentIds": Array [],
+      "render": [Function],
+      "styledComponentId": "sc-bdVaJa",
+      "target": "div",
+      "toString": [Function],
+      "warnTooManyClasses": [Function],
+      "withComponent": [Function],
+    }
+  }
+  forwardedRef={null}
+  index={0}
+  player="o"
 >
   o
-</div>
+</StyledComponent>
 `;
 
-exports[`components:Square renders the Square with the proper styles for player X in the bottom left square 1`] = `
-.c0 {
-  border-color: hsla(0,0%,0%,0.2);
+exports[`components:Square matches the snapshot for player X in the bottom left square 1`] = `
+<StyledComponent
+  forwardedComponent={
+    Object {
+      "$$typeof": Symbol(react.forward_ref),
+      "attrs": Array [],
+      "componentStyle": ComponentStyle {
+        "componentId": "sc-bdVaJa",
+        "isStatic": false,
+        "rules": Array [
+          "
+  border-color: hsla(0, 0%, 0%, 0.2);
   border-style: solid;
-  border-width: 0 2px 0 0;
-  color: hsla(6,59%,50%,1);
+  border-width: 0 ",
+          [Function],
+          "
+    ",
+          [Function],
+          " 0;
+  color: ",
+          [Function],
+          ";
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
   text-align: center;
   text-transform: uppercase;
-}
-
-<div
-  className="c0"
+",
+        ],
+      },
+      "displayName": "StyledSquare",
+      "foldedComponentIds": Array [],
+      "render": [Function],
+      "styledComponentId": "sc-bdVaJa",
+      "target": "div",
+      "toString": [Function],
+      "warnTooManyClasses": [Function],
+      "withComponent": [Function],
+    }
+  }
+  forwardedRef={null}
+  index={6}
+  player="x"
 >
   x
-</div>
+</StyledComponent>
 `;
 
-exports[`components:Square renders the Square with the proper styles for player X in the bottom right square 1`] = `
-.c0 {
-  border-color: hsla(0,0%,0%,0.2);
+exports[`components:Square matches the snapshot for player X in the bottom right square 1`] = `
+<StyledComponent
+  forwardedComponent={
+    Object {
+      "$$typeof": Symbol(react.forward_ref),
+      "attrs": Array [],
+      "componentStyle": ComponentStyle {
+        "componentId": "sc-bdVaJa",
+        "isStatic": false,
+        "rules": Array [
+          "
+  border-color: hsla(0, 0%, 0%, 0.2);
   border-style: solid;
-  border-width: 0 0 0 0;
-  color: hsla(6,59%,50%,1);
+  border-width: 0 ",
+          [Function],
+          "
+    ",
+          [Function],
+          " 0;
+  color: ",
+          [Function],
+          ";
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
   text-align: center;
   text-transform: uppercase;
-}
-
-<div
-  className="c0"
+",
+        ],
+      },
+      "displayName": "StyledSquare",
+      "foldedComponentIds": Array [],
+      "render": [Function],
+      "styledComponentId": "sc-bdVaJa",
+      "target": "div",
+      "toString": [Function],
+      "warnTooManyClasses": [Function],
+      "withComponent": [Function],
+    }
+  }
+  forwardedRef={null}
+  index={8}
+  player="x"
 >
   x
-</div>
+</StyledComponent>
 `;
 
-exports[`components:Square renders the Square with the proper styles for player X in the top left square 1`] = `
-.c0 {
-  border-color: hsla(0,0%,0%,0.2);
+exports[`components:Square matches the snapshot for player X in the top left square 1`] = `
+<StyledComponent
+  forwardedComponent={
+    Object {
+      "$$typeof": Symbol(react.forward_ref),
+      "attrs": Array [],
+      "componentStyle": ComponentStyle {
+        "componentId": "sc-bdVaJa",
+        "isStatic": false,
+        "rules": Array [
+          "
+  border-color: hsla(0, 0%, 0%, 0.2);
   border-style: solid;
-  border-width: 0 2px 2px 0;
-  color: hsla(6,59%,50%,1);
+  border-width: 0 ",
+          [Function],
+          "
+    ",
+          [Function],
+          " 0;
+  color: ",
+          [Function],
+          ";
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
   text-align: center;
   text-transform: uppercase;
-}
-
-<div
-  className="c0"
+",
+        ],
+      },
+      "displayName": "StyledSquare",
+      "foldedComponentIds": Array [],
+      "render": [Function],
+      "styledComponentId": "sc-bdVaJa",
+      "target": "div",
+      "toString": [Function],
+      "warnTooManyClasses": [Function],
+      "withComponent": [Function],
+    }
+  }
+  forwardedRef={null}
+  index={0}
+  player="x"
 >
   x
-</div>
+</StyledComponent>
 `;
 
-exports[`components:Square renders the Square with the proper styles for player X in the top right square 1`] = `
-.c0 {
-  border-color: hsla(0,0%,0%,0.2);
+exports[`components:Square matches the snapshot for player X in the top right square 1`] = `
+<StyledComponent
+  forwardedComponent={
+    Object {
+      "$$typeof": Symbol(react.forward_ref),
+      "attrs": Array [],
+      "componentStyle": ComponentStyle {
+        "componentId": "sc-bdVaJa",
+        "isStatic": false,
+        "rules": Array [
+          "
+  border-color: hsla(0, 0%, 0%, 0.2);
   border-style: solid;
-  border-width: 0 0 2px 0;
-  color: hsla(6,59%,50%,1);
+  border-width: 0 ",
+          [Function],
+          "
+    ",
+          [Function],
+          " 0;
+  color: ",
+          [Function],
+          ";
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
   text-align: center;
   text-transform: uppercase;
-}
-
-<div
-  className="c0"
+",
+        ],
+      },
+      "displayName": "StyledSquare",
+      "foldedComponentIds": Array [],
+      "render": [Function],
+      "styledComponentId": "sc-bdVaJa",
+      "target": "div",
+      "toString": [Function],
+      "warnTooManyClasses": [Function],
+      "withComponent": [Function],
+    }
+  }
+  forwardedRef={null}
+  index={2}
+  player="x"
 >
   x
-</div>
+</StyledComponent>
 `;
 ```
 
 Pay special attention to the content of the `<div>` element, which should be `x` or `o`, and the values for `color` and `border-width`. They should change according to the player and the position of the square, respectively. I think we've got all the possibilities covered here, but if you wanted to be really thorough, you could test all nine squares. I'm OK with this.
 
+This isn't really the most effective way to do this, but it's a start. If we have time, we'll revisit this later.
+
 ## Finishing up
 
 Let's go back to our `App` test and do a `dive()` to make sure our CSS is being tested. In `src/components/App/index.js`:
 
-```javascript
-import React from 'react'
+```jsx
+import * as React from 'react'
+
+import App from './'
 import { shallow } from 'enzyme'
 
-import App from '.'
-
 describe('components:App', () => {
-  it('renders the App with a game board and nine squares', () => {
+  it('matches the snapshot', () => {
     expect(toJson(shallow(<App />).dive())).toMatchSnapshot()
   })
-}) 
+})
 ```
 
 Update the tests with `u` and check the `src/components/App/__snapshots__/index.spec.js.snap` file and you should see:
@@ -425,19 +610,38 @@ Update the tests with `u` and check the `src/components/App/__snapshots__/index.
 ```javascript
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components:App renders the App with a game board and nine squares 1`] = `
-.c0 {
+exports[`components:App matches the snapshot 1`] = `
+<StyledComponent
+  forwardedComponent={
+    Object {
+      "$$typeof": Symbol(react.forward_ref),
+      "attrs": Array [],
+      "componentStyle": ComponentStyle {
+        "componentId": "sc-htpNat",
+        "isStatic": true,
+        "rules": Array [
+          "
   display: grid;
-  font-family: 'Verdana',sans-serif;
+  font-family: 'Verdana', sans-serif;
   grid-template-areas: 'board';
   height: 100vh;
   margin: 0;
   padding: 0;
   width: 100vw;
-}
-
-<div
-  className="c0"
+",
+        ],
+      },
+      "displayName": "StyledApp",
+      "foldedComponentIds": Array [],
+      "render": [Function],
+      "styledComponentId": "sc-htpNat",
+      "target": "div",
+      "toString": [Function],
+      "warnTooManyClasses": [Function],
+      "withComponent": [Function],
+    }
+  }
+  forwardedRef={null}
 >
   <Board>
     <Square
@@ -486,7 +690,7 @@ exports[`components:App renders the App with a game board and nine squares 1`] =
       player="x"
     />
   </Board>
-</div>
+</StyledComponent>
 `;
 ```
 
