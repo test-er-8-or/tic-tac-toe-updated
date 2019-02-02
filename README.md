@@ -488,46 +488,58 @@ Your final `package.json` file should look like this (version numbers may vary):
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "ramda": "^0.25.0",
-    "ramda-adjunct": "^2.6.0",
-    "react": "^16.3.1",
-    "react-dom": "^16.3.1",
-    "react-redux": "^5.0.7",
-    "react-router": "^4.2.0",
-    "react-scripts": "1.1.4",
-    "redux": "^3.7.2",
-    "redux-devtools-extension": "^2.13.2",
-    "redux-observable": "^0.18.0",
-    "rxjs": "^5.5.10",
-    "styled-components": "^3.2.5"
+    "ramda": "^0.26.1",
+    "ramda-adjunct": "^2.14.0",
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
+    "react-redux": "^6.0.0",
+    "react-router": "^4.3.1",
+    "react-scripts": "2.1.3",
+    "redux": "^4.0.1",
+    "redux-devtools-extension": "^2.13.8",
+    "redux-observable": "^1.0.0",
+    "rxjs": "^6.4.0",
+    "rxjs-compat": "^6.4.0",
+    "styled-components": "^4.1.3"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "format": "prettier-standard 'src/**/*js'",
-    "precommit": "lint-staged",
+    "format": "prettier-standard 'src/**/*.js'",
+    "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-  "lint-staged": {
-    "linters": {
-      "src/**/*.js": [
-        "prettier-standard",
-        "git add"
-      ]
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
     }
   },
+  "lint-staged": {
+    "src/**/*.js": [
+      "prettier-standard",
+      "git add"
+    ]
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
   "devDependencies": {
-    "enzyme": "^3.3.0",
-    "enzyme-adapter-react-16": "^1.1.1",
-    "enzyme-to-json": "^3.3.3",
-    "husky": "^0.14.3",
-    "jest-enzyme": "^6.0.0",
-    "jest-styled-components": "^5.0.1",
-    "lint-staged": "^7.0.4",
-    "prettier-standard": "^8.0.1",
-    "react-test-renderer": "^16.3.1",
-    "redux-mock-store": "^1.5.1"
+    "enzyme": "^3.8.0",
+    "enzyme-adapter-react-16": "^1.8.0",
+    "enzyme-to-json": "^3.3.5",
+    "husky": "^1.3.1",
+    "jest-enzyme": "^7.0.1",
+    "jest-styled-components": "^6.3.1",
+    "lint-staged": "^8.1.3",
+    "prettier-standard": "^9.1.1",
+    "react-test-renderer": "^16.7.0",
+    "redux-mock-store": "^1.5.3"
   }
 }
 ```
