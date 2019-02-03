@@ -55,7 +55,7 @@ git add -A
 git status
 git commit -m "Add first pass at game board"
 git status
-git push --set-upstream origin 01-add-the-game-board
+git push
 git status
 ```
 
