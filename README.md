@@ -1,59 +1,389 @@
-# Adding state management with Redux
+# Checking for a winner
 
-We now have click handlers on our Squares, but all they do is log out the number of the Square to the dev console. That's not much use.
+This is a long one, and we cover a lot of new code and new ideas, so take your time, move slowly, look carefully, and think about what it all means. Be careful not to miss changes. Computers are notoriously unforgiving. One character out of place and it probably won't work.
 
-What we want is to track the players' moves in a `moves` array. We need somewhere to store that. We could store it in the internal state of the `App` component&mdash;and that's how most developers would probably do it initially&mdash;but, really, we will find it much easier in the long run to store all our state in one place, not distributed throughout the app.
+As you must know, you win in Tic-Tac-Toe (AKA Noughts & Crosses) by marking three squares in a row with your mark, either vertically, horizontally, or diagonally.
 
-A great way to do this is with the [redux](https://redux.js.org/) library.
+Our squares are numbered like this:
 
-Let's build a store in which we can keep our `moves` array. Then we'll pass that store into our `App` component (using React's [context](https://reactjs.org/docs/context.html) feature). In our `App` component we'll add a "selector" that gets the current state of our `moves` array, and a method that "dispatches" an action to the store that will append a move onto the `moves` array. It may seem complex, but it's actually very simple.
+```
+ 0 | 1 | 2
+-----------
+ 3 | 4 | 5
+-----------
+ 6 | 7 | 8
+````
 
-To begin, we'll create an action that represents a player's move. We're going to use a JavaScript Object with a `type` key and a `payload` key, and in the payload we'll include the square that the player is playing. Here is what our 'SQUARE_CLICKED' action is going to look like:
+That means that there are eight possible wins:
+
+1. `[ 0, 1, 2 ]`
+1. `[ 3, 4, 5 ]`
+1. `[ 6, 7, 8 ]`
+1. `[ 0, 3, 6 ]`
+1. `[ 1, 4, 7 ]`
+1. `[ 2, 5, 8 ]`
+1. `[ 0, 4, 8 ]`
+1. `[ 2, 4, 6 ]`
+
+But there's a problem. Can you spot it? 
+
+It is this: our state contains a list of _moves_. Here's a sample game: `[0, 4, 6, 3, 5, 2, 1, 7, 8]`. The even-numbered indexes (0, 2, etc.) represent X moves; the odd-numbered indexes (1, 3, etc.) represent O moves. But we don't have a board in our state, so, for example, if `0-1-2` is a win, we'd have to check that 0, 1, and 2 were all in the moves array, _but also that they all appeared in either even-numbered spots (X wins) or odd-numbered spots (O wins), not a mix of the two!_
+
+```
+[ 0, 4, 6, 3, 5, 2, 1, 7, 8 ]
+  x  o  x  o  x  o  x  o  x
+```
+
+Here you can see that 0 and 1 were played by `x`, but 2 was played by `o`, so `[ 0, 1, 2 ]` is _not_ a win despite all three squares having been played.
+
+There are a few other things to consider. For example, do we need to check for a win on every move? Obviously not. You can't win on the first move, for example. So how many moves must take place before someone can win?
+
+Remember that we're going to have X make the first move. So a minimum of 5 moves (3 X, 2 O) is necessary for a win. Put another way, X _could_ win on move 5, 7, or 9; O could win on move 6 or 8. There can never be more than 9 moves as there are only 9 squares.
+
+We could add a board array to our state, but then we'd have to track both moves and the board. What if we get them out of whack somehow? We want a _single source of truth_.
+
+So we need to be able either to determine the win directly from the `moves` array, or to convert it on the fly after each move into something like a board so we can check for a win.
+
+Let's try it and see how difficult it is.
+
+## Generating a game board on the fly
+
+[Ramda](http://ramdajs.com/) is your friend. Functions for everything! Remember this one?
+
+```javascript
+times(identity, 9) // yields [0, 1, 2, 3, 4, 5, 6, 7, 8]
+```
+
+[Try it](http://ramdajs.com/repl/?v=0.25.0#?times%28identity%2C%209%29)
+
+So that gives us a board with the numbers of the squares. Now we need to "map" our players moves to the board. If only we had a way to convert a move to a player! Oh, wait. Remember this utility function in `src/utilities/getPlayer/index.js`?
+
+```javascript
+import { indexOf } from 'ramda'
+
+export default function getPlayer (square, moves = []) {
+  const move = indexOf(square, moves)
+
+  if (move < 0) {
+    return undefined
+  }
+
+  return move % 2 === 0 ? 'x' : 'o'
+}
+```
+
+Couldn't we use that and our `moves` array from our state? Let's say this is our `moves` array: `[0, 4, 1, 3, 2]`. That's a win for X, by the way. It's a board that would look like this:
+
+```
+ X | X | X
+-----------
+ O | O |
+-----------
+   |   |
+```
+
+That should yield a board array like this: `['x', 'x', 'x', 'o', 'o', undefined, undefined, undefined, undefined]`.
+
+So let's add a `getBoard` utility function. We'll need a `src/utilities/getBoard` folder, and we'll start with a `src/utilities/getBoard/index.spec.js` file. Here's our code:
+
+```javascript
+import getBoard from '.'
+
+describe('utilities:getBoard', () => {
+  it('returns the correct board given a set of moves', () => {
+    const moves = [0, 4, 1, 3, 2]
+
+    expect(getBoard(moves)).toMatchObject([
+      'x',
+      'x',
+      'x',
+      'o',
+      'o',
+      undefined,
+      undefined,
+      undefined,
+      undefined
+    ])
+  })
+})
+```
+
+It fails, of course. Now let's use our `times(identity, 9)` board and map through it checking each square against the `moves` array we passed in, and returning a _new_ array in which the square either contains a player or is undefined. Create `src/utilities/getBoard/index.js` and add this code:
+
+```javascript
+import { identity, map, times } from 'ramda'
+
+import getPlayer from '../getPlayer'
+
+export default function getBoard (moves) {
+  return map(square => getPlayer(square, moves), times(identity, 9))
+}
+```
+
+And our test passes. It's a simple utility function (all the best are), so it even passes 100% coverage. Good time for a commit.
+
+```bash
+git add -A
+git commit -m "Add the getBoard utility function"
+git push
+```
+
+## Checking for wins
+
+Let's take our winning patters from above and convert them to an array of arrays:
+
+```javascript
+const patterns = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6]
+]
+```
+
+Now, all we need to do is filter on those patterns and return any in which all three squares have the same player in them. So what we want to know is:
+
+1. Is there a player's mark in the first square of the three, i.e., is it a move? AND
+1. Does the first square have the same mark as the second square? AND
+1. Does the second square have the same mark as the third square?
+
+Let's create yet another utility function, this one called `getWins`. It will take the current board and return an array of the winning pattern(s), if any. We'll need a `src/utilities/getWins` folder and a `src/utilities/getWins/index.spec.js` file. We'll write a test:
+
+```javascript
+// src/utilities/getWins/index.spec.js
+import getWins from '.'
+
+describe('utilities:getWins', () => {
+  it('returns a array with the winning pattern when there is a single win', () => {
+    const board = ['x', 'o', 'x', 'o', 'x', 'o', 'x', undefined, undefined]
+    const wins = [[2, 4, 6]]
+
+    expect(getWins(board)).toEqual(wins)
+  })
+})
+```
+
+That's a win along the diagonal from top right to bottom left. Note that the `getWins` function should return an array _of arrays_, because there can be more than one winning trinity. Now let's make it rain.
+
+We will run filter on our _patterns_, comparing to the board in success. IF the first square is not `undefined` AND the first square belongs to the same player as the second AND the second square belongs to the same player as the third, THEN we will include that win pattern in the output. Create `src/utilities/getWins/index.js` and add this code:
+
+```javascript
+// src/utilities/getWins/index.js
+import { filter } from 'ramda'
+
+const patterns = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6]
+]
+
+export default function getWins (board) {
+  return filter(pattern => {
+    const [s1, s2, s3] = pattern
+
+    return (
+      Boolean(board[s1]) && board[s1] === board[s2] && board[s2] === board[s3]
+    )
+  }, patterns)
+}
+```
+
+Great! Let's extend our tests to include a board that has no win (empty array out) and one with two wins. Here's our new `src/utilities/getWins/index.spec.js`:
+
+```javascript
+// src/utilities/getWins/index.spec.js
+import getWins from '.'
+
+describe('utilities:getWins', () => {
+  it('returns an empty array when there are no wins', () => {
+    const board = [
+      'x',
+      'o',
+      'x',
+      'o',
+      'x',
+      'o',
+      undefined,
+      undefined,
+      undefined
+    ]
+    const wins = []
+
+    expect(getWins(board)).toEqual(wins)
+  })
+
+  it('returns a array with the winning pattern when there is a single win', () => {
+    const board = ['x', 'o', 'x', 'o', 'x', 'o', 'x', undefined, undefined]
+    const wins = [[2, 4, 6]]
+
+    expect(getWins(board)).toEqual(wins)
+  })
+
+  it('returns a array with two winning patterns when there are two wins', () => {
+    const board = ['x', 'o', 'x', 'o', 'x', 'o', 'x', 'o', 'x']
+    const wins = [[0, 4, 8], [2, 4, 6]]
+
+    expect(getWins(board)).toEqual(wins)
+  })
+})
+```
+
+That should cover us, and indeed test coverage is 100%. Now let's add our `getWins` function to our utilities import/export in `src/utilities/index.js`:
+
+```javascript
+// src/utilities/index.js
+import getBoard from './getBoard'
+import getPlayer from './getPlayer'
+import getWins from './getWins'
+
+export { getBoard, getPlayer, getWins }
+```
+
+Check our tests, and time for a commit.
+
+```bash
+git add -A
+git commit -m "Add a getWins utility function"
+git push
+```
+
+## Updating the state
+
+So now we have a utility function that will give us an array of winning combinations. It may return an empty array if no one has won (yet). It may return an array with a single winning combination of squares, which is itself an array. (We call this a two-dimensional array, that is, an array of arrays.) Or, in remote cases, there will be two winning combinations. There will never be three.
+
+A little thought tells us that X, who moves first, will get a maximum of five plays, and that O, who always moves second, will get a maximum of four plays. There are, after all, only nine squares.
+
+As two winning combinations means `2 * 3 === 6`, six squares, it should be obvious that the two combinations must share at least one square, and that the only player who can ever achieve this "double play" is X. If you draw the eight possible wins on the board you will also see that no two combinations ever share _more than one square_.
+
+Keep thinking. Even if it were possible for a player to make plays in six squares, it would still not be possible to have two winning combinations because that would require moving in two squares simultaneously. Otherwise, the first winning combination would end the game, and there would never be another. This leads us to another realisation, which is that the last square played in a double win _must be the shared square_.
+
+Finally, looking at the board, you can see that any square could be the winning square, and that this variously leads to a plus shape, an X shape, an L shape, or a T shape (the L and T might be rotated 90, 180, or 270 degrees). Want to play a game with a double win, maybe for testing? Start in an outer square and go around the outer edge in order in either direction, then play the center square last. That will give you an x or a + win, depending on whether you started in a corner (x) or a side (+) square.
+
+Here are three possible outputs from our `getWins` function:
+
+```jasvascript
+[]                      // no winner (yet)
+[[0, 1, 2]]             // top row
+[[0, 1, 2], [0, 3, 6]]  // top row, left column
+```
+
+Once we have this output, we're going to want to store it in the state. Might also be nice to store the winning player, X or O. Also, we don't actually need an array of arrays. All we care about is which squares were part of the win, so we can _flatten_ our wins array and remove duplicates. That would make `[[0, 1, 2], [0, 3, 6]]` look like this `[0, 1, 2, 3, 6]`.
+
+Our state is managed by Redux, and the way we update it is by dispatching an "action" to our Redux store. Our actions, as you may recall, take the form:
 
 ```javascript
 {
-  type: 'SQUARE_CLICKED',
+  type: 'NAME_OF_TYPE',
   payload: {
-    square: 4
+    // some payload
+  },
+  meta: {
+    // optional metadata
   }
 }
 ```
 
-This is the current practice for Redux actions: a `type`, a `payload`, and, if necessary, a `meta` key.
-
-We'll have a very limited, _enumerated_ set of action types, so let's create constants for the type names. First, let's create a folder to hold our state management code under the `src` folder and call it `src/state`. Then in there, let's create a `src/state/constants.js` file and a `src/state/index.js` file. Add the following to the `constants.js` file:
+So first thing we'll need is an action type. Let's call it `GAME_OVER`. We'll add it to `src/state/constants.js`:
 
 ```javascript
 // src/state/constants.js
+export const GAME_OVER = 'GAME_OVER'
 export const SQUARE_CLICKED = 'SQUARE_CLICKED'
 ```
 
-Pretty simple file, eh?
+You may have noticed that I like to keep things in alphabetical order. This makes it easier to find things when our files get a bit larger and more complex.
 
-And we'll add this file to our list of files the coverage tool should ignore in `package.json`:
-
-```json
-  "jest": {
-    "collectCoverageFrom": [
-      "!src/serviceWorker.js",
-      "!src/index.js",
-      "!src/state/constants.js",
-      "src/**/*.{js,jsx}",
-      "!<rootDir>/node_modules/"
-    ],
-    "snapshotSerializers": [
-      "enzyme-to-json/serializer"
-    ]
-  }
-```
-
-Now we can use that action type to create our action. We're going to make an action creator function for our `squareClicked` action. Create a new folder under `src/state` at `src/state/actions` and an `index.spec.js` file in that folder. Now we'll add our test:
+We'll want to add this to our `src/state/index.js` imports and exports:
 
 ```javascript
-import { SQUARE_CLICKED } from '../'
-import { squareClicked } from './'
+// src/state/index.js
+import { squareClicked } from './actions'
+import { GAME_OVER, SQUARE_CLICKED } from './constants'
+import { initialState, rootReducer } from './reducers'
+import { getMoves } from './selectors'
+import configureStore from './store'
+
+export {
+  configureStore,
+  GAME_OVER,
+  getMoves,
+  initialState,
+  rootReducer,
+  SQUARE_CLICKED,
+  squareClicked
+}
+```
+
+Again, note that my exports are alphabetised, and my imports are alphabetised _by filename_, so they align with the files in the navigation tree in my VSCode editor. You may find this a bit much, but I find it makes finding things easier when I come back to my code later.
+
+What will our state look like after the above array of winning combinations is returned from our `getWins` function. We want to store the winning squares and the winning player, right? So why not something like this:
+
+```javascript
+const state = {
+  moves: [1, 4, 2, 5, 3, 7, 6, 8, 0],
+  winningSquares: [0, 1, 2, 3, 6],
+  winningPlayer: 'x'
+}
+```
+
+Or, here is a simpler win by O:
+
+```javascript
+const state = {
+  moves: [3, 4, 0, 6, 1, 2],
+  winningSquares: [2, 4, 6],
+  winningPlayer: 'o'
+}
+```
+
+We can simply pass the `winningSquares` and the `winningPlayer` into our action's `payload`:
+
+```javascript
+const action = {
+  type: GAME_OVER,
+  payload: {
+    winningSquares: [0, 1, 2, 3, 6],
+    winningPlayer: 'x'
+  }
+}
+```
+
+I chose the double win here to show that we only need to store the winning squares, not the winning combinations, but we could do it either way.
+
+So let's create our action creator test first. Change `src/state/actions/index.spec.js` to this:
+
+```javascript
+// src/state/actions/index.spec.js
+import { gameOver, squareClicked } from '.'
+import { GAME_OVER, SQUARE_CLICKED } from '..'
 
 describe('state:actions', () => {
+  describe('gameOver', () => {
+    it('produces the correct action when the game is over', () => {
+      const squares = [0, 4, 8, 2, 6]
+      const player = 'x'
+
+      expect(gameOver(squares, player)).toMatchObject({
+        type: GAME_OVER,
+        payload: {
+          winners: {
+            squares,
+            player
+          }
+        }
+      })
+    })
+  })
+
   describe('squareClicked', () => {
     it('produces the correct action for clicking a Square', () => {
       const square = 4
@@ -61,7 +391,7 @@ describe('state:actions', () => {
       expect(squareClicked(square)).toMatchObject({
         type: SQUARE_CLICKED,
         payload: {
-          square
+          square: 4
         }
       })
     })
@@ -69,10 +399,23 @@ describe('state:actions', () => {
 })
 ```
 
-Run the tests (use `p` and `actions` to filter on the actions folder) and you should see it fail. Now let's make it pass. Create a `src/state/actions/index.js` file with the following code:
+We'll keep the action simple, with just `squares` and `player`. Run the tests with `yarn test` and it will fail, of course. Now let's add the `gameOver` action creator to make this test pass. In `src/state/actions/index.js`:
 
 ```javascript
-import { SQUARE_CLICKED } from '../constants'
+// src/state/actions/index.js
+import { GAME_OVER, SQUARE_CLICKED } from '..'
+
+function gameOver (squares, player) {
+  return {
+    type: GAME_OVER,
+    payload: {
+      winners: {
+        squares,
+        player
+      }
+    }
+  }
+}
 
 function squareClicked (square) {
   return {
@@ -83,186 +426,49 @@ function squareClicked (square) {
   }
 }
 
-export { squareClicked }
+export { gameOver, squareClicked }
 ```
 
-By now it should be obvious how this works. And the test should be passing.
+And now the tests pass. Add it to our `src/state/index.js` imports and exports:
 
-We have a working action creator! Let's commit to it:
+```javascript
+// src/state/index.js
+import { gameOver, squareClicked } from './actions'
+import { GAME_OVER, SQUARE_CLICKED } from './constants'
+import { initialState, rootReducer } from './reducers'
+import { getMoves } from './selectors'
+import configureStore from './store'
+
+export {
+  configureStore,
+  GAME_OVER,
+  gameOver,
+  getMoves,
+  initialState,
+  rootReducer,
+  SQUARE_CLICKED,
+  squareClicked
+}
+```
+
+And we're good to go. But we'll need to consume this action in the reducer, so let's do that next, after a commit:
 
 ```bash
 git add -A
-git commit -m "Add squareClicked action creator"
+git commit -m "Add gameOver action creator"
 git push
 ```
 
------
+## Handling the GAME_OVER action
 
-## The reducer
-
-Next we need a function that will accept that action and our current state object and return a new state with that square added to the `moves` array. For this purpose, we'll use a Redux "reducer" function. Reducers are simple: they take an action and a state, and return a new state. Hey! Just what we were looking for.
-
-So create a `src/state/reducers` folder, and an `index.spec.js` file in it. And then write this test:
+So our reducer will take the `squares` and `player` from the `GAME_OVER` action payload and store them in the state as `winningSquares` and `winningPlayer` respectively, flattening out our `winners` object from the payload. We'll start with the tests, of course. Let's make `src/state/reducers/index.spec.js` look like this:
 
 ```javascript
-import { rootReducer } from './'
+// src/state/reducers/index.spec.js
+import { initialState, rootReducer } from '.'
+import { gameOver, squareClicked } from '..'
 
 describe('state:reducers', () => {
-  describe('rootReducer', () => {
-    it('handles an unknown action type by returning the state unchanged', () => {
-      const state = 'state'
-
-      expect(rootReducer(state, {})).toBe(state)
-    })
-  })
-})
-```
-
-You may have noticed that the tests in watch mode only run on files chagned since the last commit, so we don't really need to filter them. Run the tests with `yarn test` and you should see the reducers test fail. Now we need to make it pass. So create a `src/state/reducers/index.js` file and add the following:
-
-```javascript
-function rootReducer (state, action) {
-  switch (action && action.type) {
-    default:
-      return state
-  }
-}
-
-export { rootReducer }
-```
-
-Ha, ha. This couldn't be much simpler! It takes a state and an action, switches on the action.type (if it exists), and then does only one default action: returns the state unchanged. Not much use, but enough to pass our simple test. That's one of our requirements handled. Now let's address the other: we want to add squares to the moves array. Leave the tests running while we add more.
-
-Let's create a new test first. Here's our updated `src/state/reducers/index.spec.js`:
-
-```javascript
-import { rootReducer } from './'
-import { squareClicked } from '../actions'
-
-describe('state:reducer', () => {
-  describe('rootReducer', () => {
-    it('handles an unknown action type by returning the state unchanged', () => {
-      const state = 'state'
-
-      expect(rootReducer(state, {})).toBe(state)
-    })
-
-    it('handles a move by appending the Square number to the moves array', () => {
-      const state = {
-        moves: [4, 0]
-      }
-
-      expect(rootReducer(state, squareClicked(2))).toMatchObject({
-        moves: [4, 0, 2]
-      })
-    })
-  })
-})
-```
-
-That's going to fail something like this:
-
-![Reducer test fail](./assets/reducer-test-fail.png)
-
-As you can see, it did what we'd expect: returned the state unchanged. So let's fix that. Here is our new `src/state/reducers/index.js` file:
-
-```javascript
-import { SQUARE_CLICKED } from '../constants'
-import { isUndefined } from 'ramda-adjunct'
-
-const initialState = { moves: [] }
-
-function rootReducer (state = initialState, { payload = {}, type }) {
-  switch (type) {
-    case SQUARE_CLICKED:
-      return {
-        ...state,
-        moves: isUndefined(payload.square)
-          ? state.moves
-          : [...state.moves, payload.square]
-      }
-    default:
-      return state
-  }
-}
-
-export { initialState, rootReducer }
-```
-
-Here we:
-
-* Import `isUndefined` from 'ramda-adjunct'
-* Create an initial state that holds an empty `moves` array
-* Default the state parameter to the `initialState`
-* Destructure the `action` parameter into a payload (defaults to an empty object) and a type
-* Handle a SQUARE_CLICKED action type by creating a new state and
-  * Copying over the old state: `...state` (this uses the new [spread operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax))
-  * Overwriting the `moves` array
-    * If the `payload.square` is undefined, then just keeping the same `moves`
-    * If the `payload.square` _is_ defined, then appending it to the `moves` array and returning that
-
-Our test passes with flying colours, so we now have a `moves` array in state that updates.
-
-So let's run our coverage tests again just for fun: `yarn test --coverage`. Here's what we should see:
-
-![Reducer coverage fails](./assets/reducer-fail.png)
-
-Pay no attention to the App line&mdash;we'll fix that later (it's because we're not finished there). But what's going on with our reducer? We have two uncovered lines: 6 and 11.
-
-Here is line 6:
-
-```javascript
-function rootReducer (state = initialState, { payload = {}, type }) {
-```
-
-We've tested the reducer with and without a payload, so that can't be it. But have we tested that the state defaults to the `initialState`? No, we haven't. So let's add a test for that. We'll need to import the initialState, too. Here's our updated `src/state/reducers/index.spec.js`:
-
-```javascript
-import { initialState, rootReducer } from './'
-
-import { squareClicked } from '../actions'
-
-describe('state:reducer', () => {
-  describe('rootReducer', () => {
-    it('defaults to the initialState', () => {
-      expect(rootReducer(undefined, {})).toBe(initialState)
-    })
-
-    it('handles an unknown action type by returning the state unchanged', () => {
-      const state = 'state'
-
-      expect(rootReducer(state, {})).toBe(state)
-    })
-
-    it('handles a move by appending the Square number to the moves array', () => {
-      const state = {
-        moves: [4, 0]
-      }
-
-      expect(rootReducer(state, squareClicked(2))).toMatchObject({
-        moves: [4, 0, 2]
-      })
-    })
-  })
-})
-```
-
-Run our coverage check and line 6 has been handled. Now for line 11. It looks like this:
-
-```javascript
-        moves: isUndefined(payload.square)
-          ? state.moves
-          : [...state.moves, payload.square]
-```
-
-We need to add a test that passes the action, but without a square. Here's our new `src/state/reducers/index.spec.js` file. The new test is at the bottom:
-
-```javascript
-import { initialState, rootReducer } from './'
-
-import { squareClicked } from '../actions'
-
-describe('state:reducer', () => {
   describe('rootReducer', () => {
     it('defaults to the initialState', () => {
       expect(rootReducer(undefined, {})).toBe(initialState)
@@ -293,30 +499,70 @@ describe('state:reducer', () => {
         moves: [4, 0]
       })
     })
+
+    it('adds the winningSquares and the winningPlayer, if any, on GAME_OVER', () => {
+      const state = {
+        moves: [0, 1, 2, 3, 4, 5, 6]
+      }
+
+      expect(rootReducer(state, gameOver([2, 4, 6], 'x'))).toMatchObject({
+        moves: [0, 1, 2, 3, 4, 5, 6],
+        winningSquares: [2, 4, 6],
+        winningPlayer: 'x'
+      })
+    })
   })
 })
 ```
 
-Run the coverage again and the reducer is at 100% coverage.
+Note that last test. That's our new one. Run the tests with `yarn test` and it fails. Now we'll add the code to make it pass to the reducer in `src/state/reducers/index.js`:
 
-OK, time for another commit:
+```javascript
+// src/state/reducers/index.js
+import { isUndefined } from 'ramda-adjunct'
+
+import { GAME_OVER, SQUARE_CLICKED } from '..'
+
+const initialState = { moves: [] }
+
+function rootReducer (state = initialState, { payload = {}, type }) {
+  const { square, winners: { squares, player } = {} } = payload
+
+  switch (type) {
+    case GAME_OVER:
+      return {
+        ...state,
+        winningSquares: squares,
+        winningPlayer: player
+      }
+    case SQUARE_CLICKED:
+      return {
+        ...state,
+        moves: isUndefined(square) ? state.moves : [...state.moves, square]
+      }
+    default:
+      return state
+  }
+}
+
+export { initialState, rootReducer }
+```
+
+That makes the tests pass. We haven't added any exports, so no need to change `src/state/index.js` this time. Let's do a commit:
 
 ```bash
 git add -A
-git commit -m "Add rootReducer to handle squareClicked actions"
+git commit -m "Update reducer for GAME_OVER action"
 git push
 ```
 
------
+## Retrieving the winningGames and winningPlayer from state
 
-## Getting our moves out of the state
-
-We also want to be able to retrieve our moves array from the state. We'll make a "selector" to do this. This selector will be absurdly simple, but as our app grows, our selectors will grow more complex, and it will become evident why they are useful.
-
-Create a `src/state/selectors` folder and a `src/state/selectors/index.spec.js` file in it. Then add our test to the `index.spec.js` file:
+We still need a way to get these values back out of our state, and that means selectors. We'll add a couple of tests to `src/state/selectors/index.spec.js` to test that our selectors work:
 
 ```javascript
-import { getMoves } from './'
+// src/state/selectors/index.spec.js
+import { getMoves, getWinningPlayer, getWinningSquares } from '.'
 
 describe('state:selectors', () => {
   describe('getMoves', () => {
@@ -327,608 +573,438 @@ describe('state:selectors', () => {
       expect(getMoves(state)).toBe(moves)
     })
   })
-})
-```
 
-This fails the test. Now let's add the code in `src/state/selectors/index.js` to make it pass:
+  describe('getWinningPlayer', () => {
+    it('extracts the moves array from the state', () => {
+      const winningPlayer = 'x'
+      const state = { winningPlayer }
 
-```javascript
-export function getMoves ({ moves }) {
-  return moves
-}
-```
+      expect(getWinningPlayer(state)).toBe(winningPlayer)
+    })
+  })
 
-Tough one, eh? And the tests pass and coverage for the state functions is 100%. Let's commit!
+  describe('getWinningSquares', () => {
+    it('extracts the moves array from the state', () => {
+      const winningSquares = [0, 3, 6]
+      const state = { winningSquares }
 
-```bash
-git add -A
-git commit -m "Add getMoves selector"
-git push
-```
-
------
-
-Next, we'll need a store to put our state in, dispatch our actions to our reducer, and notify our components when the state is updated. That's what Redux gives us.
-
-## Adding the store
-
-Add the folder, `src/state/store`, and the default file, `src/state/store/index.spec.js`. 
-
-Our Redux store will wrap up our state and provide three methods for manipulating state:
-
-* `getState` to retrieve the latest state from the store
-* `dispatch` to dispatch actions to the reducer, thus updating the state
-* `subscribe` to allow components to listen for updates to the state so they know when to re-render
-
-On the basis of this, we can write our test:
-
-```javascript
-import configureStore from './'
-
-describe('state:store', () => {
-  describe('configureStore', () => {
-    it('creates a store', () => {
-      expect(configureStore()).toHaveProperty('getState')
-      expect(configureStore()).toHaveProperty('dispatch')
-      expect(configureStore()).toHaveProperty('subscribe')
+      expect(getWinningSquares(state)).toBe(winningSquares)
     })
   })
 })
 ```
 
-That fails, of course. Next, we'll create our store to make the test pass. In `src/state/store/index.js`, put:
+(Note the second and third tests.) These fail as expected, so we update `src/state/selectors/index.js` to add the selectors to make the tests pass:
 
 ```javascript
-import { createStore } from 'redux'
-import { rootReducer } from '../reducers'
+// src/state/selectors/index.js
+export function getMoves ({ moves }) {
+  return moves
+}
 
-export default function configureStore () {
-  return createStore(rootReducer)
+export function getWinningPlayer ({ winningPlayer }) {
+  return winningPlayer
+}
+
+export function getWinningSquares ({ winningSquares }) {
+  return winningSquares
 }
 ```
 
-After checking that test coverage for the state is still 100%. We're good to go:
+Pretty simple, eh? Tests pass, and because we've added new exports, we need to update the `src/state/index.js` file:
+
+```javascript
+// src/state/index.js
+import { gameOver, squareClicked } from './actions'
+import { GAME_OVER, SQUARE_CLICKED } from './constants'
+import { initialState, rootReducer } from './reducers'
+import { getMoves, getWinningPlayer, getWinningSquares } from './selectors'
+import configureStore from './store'
+
+export {
+  configureStore,
+  GAME_OVER,
+  gameOver,
+  getMoves,
+  getWinningPlayer,
+  getWinningSquares,
+  initialState,
+  rootReducer,
+  SQUARE_CLICKED,
+  squareClicked
+}
+```
+
+Now we can create an action on game over, update the state with the winning squares and player, and retrieve those values from the state. What remains is to somehow trigger the `getWins` function and, if it returns one or two winning combinations, or there are no more squares to play, then we want to dispatch our action and update our state accordingly. We'll get to that next.
+
+Meanwhile, notice how _simple_ our application really is. Scroll back up and look at our state objects after a win. Nothing complex, right? A list of moves by the number of the square played, a list of winning squares, a winning player.
+
+Or check out our selectors. We destructure the simple state and just return the part we want. Our action creators are similarly simple, and our reducer just updates the state accordingly. It may seem like a lot of moving parts, but it's not, really. Actions to get data into the state, a reducer to update it, and selectors to get the data back out again.
+
+As for the React components, they, too, are fairly simple and clean. Each creates a part of the view based on the props. The props are updated when the state changes (we extract some of them from the state using `mapStateToProps`), so the HTML output becomes nothing more than _a projection of the state into the view_. And that's the way we want it. It's much simpler than Model-View-Whatever. Essentially, it's just a view and a state machine.
+
+Let's do a commit:
 
 ```bash
 git add -A
-git commit -m "Add the store"
+git commit -m "Add getWinningPlayer and getWinningSquares selectors"
 git push
 ```
 
------
+## Alerting the user
 
-## Connecting our components
+We may have added the win to our state, but the board still looks (and is) playable. We want to alert the players that X has won, and to prevent further play. So back to our React components, which are responsible for both our view and for user interaction.
 
-Now that we've got the state management ready to go&mdash;we have a `squareClicked` action, a `rootReducer` to update the state, a `getMoves` selector to extract the `moves` array from the state, and a `store` to roll it all up into one, we need to pass the store to our components. Rather than pass it in as a prop and then pass it down the component tree, we'll use the React Context to put it into the "context" where it can be extracted at any point in the hierarchy. And we'll use `react-redux` and some [higher-order components](https://reactjs.org/docs/higher-order-components.html) to simplify it all.
+We could try to draw lines through the winning squares, but let's keep it simple. Let's just grey out all the _losing_ squares (and prevent further play). As squares cannot be played twice, we need do nothing to the winning squares. We also avoid dealing with the `Board` or `App` components. Our `Square` components are already "connected", so we can just get the winning squares from the state and grey out any square that isn't in the winners array.
 
-First we need to import our store into the context. We'll use a `react-redux` provided higher-order component (HOC) called [Provider](https://github.com/reactjs/redux/blob/master/docs/basics/UsageWithReact.md#passing-the-store) to wrap our `App` component and inject the store.
+We'll start with our simple component, `src/components/Square/index.js`. Let's add a `isWinningSquare` Boolean that we'll pass in from our connected version (the "container" Square) _if the game is over_. To be clear, there are three possible states of this Boolean value: `true`, `false`, and `undefined`. If the value is `undefined`, the game is in play; otherwise, the Boolean value tells us whether this square is a winner or not.
 
-Open the `src/index.js` file and make it look like this:
+This is a complex truth statement, and there are many ways you can sort it out. Here's one.
 
-```jsx
-import * as React from 'react'
-import * as serviceWorker from './serviceWorker'
+First, let's extend our `StyledSquare` to accommodate three options:
 
-import App from './components/App'
-import { Provider } from 'react-redux'
-import configureStore from './state/store'
-import { render } from 'react-dom'
+* `SquarePlayable` for unplayed squares while the game is on
+* `SquarePlayed` for squares that have been played but are not losers (yet)
+* `SquareLost` for squares that have lost, whether played or not
 
-const store = configureStore()
+We don't need a `SquareWon` square because we can just reuse the `SquarePlayed`&mdash;after all, they are not replayable.
 
-render(
-  <Provider store={store}>
-    <App />
-  </Provider>,
-  document.getElementById('root')
-)
+Only the playable squares will get our click handler to allow them to be played. They will get the "pointer" cursor you see when you hover over links. Every played square during the game and _all_ squares once the game is over will get the "default" cursor.
 
-serviceWorker.unregister()
-```
+Also, played (but not losing) squares will get the X or O colour. Losing squares that have been played will be greyed out.
 
-We:
-
-* Import the `<Provider>` higher-order component from `react-redux`
-* Import our `configureStore` function from our `state/store` folder
-* Use `configureStore` to create our store
-* Wrap the `<App />` component in our `<Provider>` and inject the store
-
-The `<Provider>` does the rest. We can now access the store in our components by `connect`-ing them.
-
-Now we will connect our `App` component to the store. Here's what our `src/components/App/index.js` file currently looks like:
-
-```jsx
-import * as React from 'react'
-
-import Board from '../Board'
-import Square from '../Square'
-import getPlayer from '../../utilities/getPlayer'
-import { isUndefined } from 'ramda-adjunct'
-import styled from 'styled-components'
-import { times } from 'ramda'
-
-const NUMBER_OF_SQUARES = 9
-
-function makeSquares (moves) {
-  return times(square => {
-    const player = getPlayer(square, moves)
-
-    return isUndefined(player) ? (
-      <Square
-        key={square}
-        index={square}
-        handleClick={() => console.log(`Square ${square}`)}
-      />
-    ) : (
-      <Square key={square} index={square} player={player} />
-    )
-  }, NUMBER_OF_SQUARES)
-}
-
-const StyledApp = styled.div`
-  display: grid;
-  font-family: 'Verdana', sans-serif;
-  grid-template-areas: 'board';
-  height: 100vh;
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-`
-StyledApp.displayName = 'StyledApp'
-
-export default function App ({ moves = [] }) {
-  return (
-    <StyledApp>
-      <Board>{makeSquares(moves)}</Board>
-    </StyledApp>
-  )
-}
-```
-
-We're going to use `react-redux` and its [connect](https://github.com/reactjs/redux/blob/master/docs/basics/UsageWithReact.md#implementing-container-components) function to "connect" our `App` to our store. So first let's import it:
+To begin, we'll add a few tests to our `src/components/Square/index.spec.js` file:
 
 ```javascript
-import { connect } from 'react-redux'
-```
-
-We're going to want to get our `moves` array out of the state. We created the `getMoves` selector for precisely this purpose. We're also going to want to dispatch `SQUARE_CLICKED` actions to our reducer, which is why we created the `squareClicked` action creator. So we need to import both:
-
-```javascript
-import { getMoves } from '../../state/selectors'
-import { squareClicked } from '../../state/actions'
-```
-
-We'll also create two functions that we'll use with `connect` to map the `moves` array from our state to our props, and to map our `dispatch` method to a function that will use our `squareClicked` action creator and `dispatch` to update the state&mdash;a function we'll inject into our `App` component as a prop as well.
-
-To do this we create two functions. The first, intended to map the state to various props, we'll call `mapStateToProps`. You can call it whatever you want, but this is the convention. Here is our version:
-
-```javascript
-function mapStateToProps (state) {
-  return {
-    moves: getMoves(state)
-  }
-}
-```
-
-As you can see, it simply takes the state (passed to it by the `connect` method) and extracts the `moves` array, which it returns as a `moves` prop. The `connect` method will inject this prop into our `App` for us. It will also `subscribe` our component to the store so that it rerenders whenever the state is updated. Nice!
-
-Then we'll create a function, call it `mapDispatchToProps` to inject a `markSquare` prop. `markSquare` will be a function that takes the index of the Square, uses the `squareClicked` action creator to create our `SQUARE_CLICKED` action, and the dispatches it to the store to update the state. From within `App` we'll be able to call `props.markSquare` and pass it the Square index to add it to our `moves` array. Wait until you see this in action!
-
-Here is our `mapDispatchToProps` function:
-
-```javascript
-function mapDispatchToProps (dispatch) {
-  return {
-    markSquare: square => dispatch(squareClicked(square))
-  }
-}
-```
-
-Again, it's pretty simple! The `connect` function will pass the store's `dispatch` method to our `mapDispatchToProps` function, and our function will return a `markSquare` prop that can be called with the number of the Square (0 to 8) to dispatch a `SQUARE_CLICKED` action to the store with the number of the Square in the payload.
-
-Now we need to connect these to our `App`, and we'll make this connected version (called a "container") our default export:
-
-```javascript
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(App)
-```
-
-Note that connect is called first with our two mapper functions, and that returns a new function that we call with our component to wrap it.
-
-We've made our `App` container the new default export, so we'll change the unwrapped `App` component just a named export. We'll also grab both of our injected props and we'll pass them along to the `makeSquares` function:
-
-```jsx
-export function App ({ markSquare, moves }) {
-  return (
-    <StyledApp>
-      <Board>{makeSquares(markSquare, moves)}</Board>
-    </StyledApp>
-  )
-}
-```
-
-As you can see, wrapping our `App` with the `connect` method is fairly simple. We can use a `mapStateToProps` function to pull things out of our state and inject them as props, and we can use a `mapDispatchToProps` function to provide functions as props that will permit our `App` component to update the state. This turns our "component" into a "container" for state.
-
-Now we have to make use of these new props. We already wired up our `moves` array, but we need to use `markSquare` as our new click handler. Let's make our `makeSquares` function look like this:
-
-```jsx
-function makeSquares (markSquare, moves = []) {
-  return times(square => {
-    const player = getPlayer(square, moves)
-
-    return isUndefined(player) ? (
-      <Square
-        key={square}
-        index={square}
-        handleClick={() => markSquare(square)}
-      />
-    ) : (
-      <Square key={square} index={square} player={player} />
-    )
-  }, NUMBER_OF_SQUARES)
-}
-```
-
-We take the `markSquare` function and create a click handler for each Square that calls it with the number of the Square. This is not the most efficient way to do this, performance-wise, because each time our board is re-rendered, it will recreate these handler functions. But with only nine squares, this is a minor hit. Still, it might be worth refactoring to move the handlers further down in the mix, or to create them only once when the component is first loaded.
-
-Now our `src/components/App/index.js` file should look like this:
-
-```javascript
-import * as React from 'react'
-
-import Board from '../Board'
-import Square from '../Square'
-import { connect } from 'react-redux'
-import { getMoves } from '../../state/selectors'
-import getPlayer from '../../utilities/getPlayer'
-import { isUndefined } from 'ramda-adjunct'
-import { squareClicked } from '../../state/actions'
-import styled from 'styled-components'
-import { times } from 'ramda'
-
-const NUMBER_OF_SQUARES = 9
-
-function makeSquares (markSquare, moves = []) {
-  return times(square => {
-    const player = getPlayer(square, moves)
-
-    return isUndefined(player) ? (
-      <Square
-        key={square}
-        index={square}
-        handleClick={() => markSquare(square)}
-      />
-    ) : (
-      <Square key={square} index={square} player={player} />
-    )
-  }, NUMBER_OF_SQUARES)
-}
-
-const StyledApp = styled.div`
-  display: grid;
-  font-family: 'Verdana', sans-serif;
-  grid-template-areas: 'board';
-  height: 100vh;
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-`
-StyledApp.displayName = 'StyledApp'
-
-function mapStateToProps (state) {
-  return {
-    moves: getMoves(state)
-  }
-}
-
-function mapDispatchToProps (dispatch) {
-  return {
-    markSquare: square => dispatch(squareClicked(square))
-  }
-}
-
-export function App ({ markSquare, moves }) {
-  return (
-    <StyledApp>
-      <Board>{makeSquares(markSquare, moves)}</Board>
-    </StyledApp>
-  )
-}
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(App)
-```
-
-Now, run the tests and update the snapshots. Everything should pass. But take a look at what happens when we check our coverage!
-
-![Container coverage sucks](./assets/container-coverage-sucks.png)
-
-We'll hold off on updating those tests until we're sure this is what we want. For now, let's run `yarn start` and test it in the browser. Then try clicking on various squares. You should see the following:
-
-* The first square you click on gets a red X
-* Clicking on it again does nothing (the cursor is no longer a pointer, either)
-* The next square you click on gets a green O
-* Play alternates between X and O
-* Play can continue until all squares are full _even if a player won one or more moves ago_
-
-We'll that's pretty good for now. But what's really happening on each click? There are tools to help us find out. We'll use Chrome's [React Developer Tools](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi) extension. Once installed, we can open the Developer's console and click on the "React" tab. Then reload the page. This tab shows us the hierarchy of our React components and is worth a class or two in its own right.
-
-At the top of the React Developer Tools pane you should see a gear icon. Click it then make sure that the "highlight updates" checkbox is checked:
-
-![Highlighting updates](./assets/highlight-updates.png)
-
-Now click on a few squares and watch what happens. See how the board outlines in blue, including _each individual square?_ That tells us that on every click, _the entire board and all squares are re-rendering. That's going to make things slow. Really, we only want the square we've clicked to update, right? So how are we going to make that work?
-
-![Everything rerenders!](./assets/everything-rerenders.gif)
-
-To fix this, we'll need to move the point where we tap into the props down in the component hierarchy. Let's move it to where it belongs&mdash;in the Square.
-
-Let's begin by stripping the `App` down to the bare minimum. We'll just have it return nine squares, each with an `index` set to the square number (0, 1, 2, etc.). We don't need to import `connect` or our action creator or our selector or our `getPlayer` utility function: we'll do all that in the individual square.
-
-Here is what `src/components/App/index.js` should look like now:
-
-```jsx
-import * as React from 'react'
-
-import Board from '../Board'
-import Square from '../Square'
-import styled from 'styled-components'
-import { times } from 'ramda'
-
-const NUMBER_OF_SQUARES = 9
-
-const StyledApp = styled.div`
-  display: grid;
-  font-family: 'Verdana', sans-serif;
-  grid-template-areas: 'board';
-  height: 100vh;
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-`
-StyledApp.defaultName = 'StyledApp'
-
-export default function App () {
-  return (
-    <StyledApp>
-      <Board>
-        {times(
-          square => (
-            <Square key={square} index={square} />
-          ),
-          NUMBER_OF_SQUARES
-        )}
-      </Board>
-    </StyledApp>
-  )
-}
-```
-
-So much simpler! We'll also need to change our `src/components/App/index.spec.js` file to import the default export. And we only need one snapshot as the `App` will never rerender! Here is the simplified code:
-
-```jsx
-import * as React from 'react'
-
-import App from './'
+// src/components/Square/index.spec.js
+import React from 'react'
 import { shallow } from 'enzyme'
 
-describe('components:App', () => {
-  it('renders the App with a blank game board and nine squares', () => {
+import Square from '.'
+
+describe('components:Square', () => {
+  it('renders the Square with the proper cursor if a click handler is provided', () => {
+    expect(
+      toJson(shallow(<Square handleClick={() => null} index={0} />).dive())
+    ).toMatchSnapshot()
+  })
+
+  it('renders the Square with the proper styles for player O in the top left square', () => {
+    expect(
+      toJson(shallow(<Square player='o' index={0} />).dive())
+    ).toMatchSnapshot()
+  })
+
+  it('renders the Square with the proper styles for player X in the top left square', () => {
+    expect(
+      toJson(shallow(<Square player='x' index={0} />).dive())
+    ).toMatchSnapshot()
+  })
+
+  it('renders the Square with the proper styles for player X in the top right square', () => {
+    expect(
+      toJson(shallow(<Square player='x' index={2} />).dive())
+    ).toMatchSnapshot()
+  })
+
+  it('renders the Square with the proper styles for player X in the bottom left square', () => {
+    expect(
+      toJson(shallow(<Square player='x' index={6} />).dive())
+    ).toMatchSnapshot()
+  })
+
+  it('renders the Square with the proper styles for player X in the bottom right square', () => {
+    expect(
+      toJson(shallow(<Square player='x' index={8} />).dive())
+    ).toMatchSnapshot()
+  })
+
+  it('renders the Square with the proper styles for player X win', () => {
+    expect(
+      toJson(shallow(<Square player='x' index={8} isWinningSquare />).dive())
+    ).toMatchSnapshot()
+  })
+
+  it('renders the Square with the proper styles for player O loss', () => {
     expect(
       toJson(
-        shallow(<App />)
-          .first()
-          .render()
+        shallow(<Square player='o' index={8} isWinningSquare={false} />).dive()
       )
+    ).toMatchSnapshot()
+  })
+
+  it('renders the Square with the proper styles for an unplayed square after game over', () => {
+    expect(
+      toJson(shallow(<Square index={4} isWinningSquare={false} />).dive())
     ).toMatchSnapshot()
   })
 })
 ```
 
-Run the tests and update the snapshots with `u`, and they should all pass. Then run the coverage. We're back to 100%!
-
-Adding all that `connect` code to our `App` component made it pretty big and unwieldy. There is an alternative. We can keep our "container" separate from the "component" it wraps. Let's try that. Create a new folder called `src/containers` and a file, then a subfolder, `src/containers/Square`, and a file, `src/containers/Square/index.js`.
-
-In `src/containers/Square/index.js`, we'll import our `Square` component from the components folder, and our `connect` function from `react-redux`. We'll also need our `getMoves` selector and the `squareClicked` action creator from our `src/state` folder, as well as the `getPlayer` utility function from our `src/utilities` folder:
+We can extend `StyledSquare` thus:
 
 ```javascript
-import Square from '../../components/Square'
-import { connect } from 'react-redux'
-import { getMoves } from '../../state/selectors'
-import getPlayer from '../../utilities/getPlayer'
-import { squareClicked } from '../../state/actions'
-```
-
-Next, we'll create a `mapStateToProps` function to get the `moves` array out of the state, and then we'll use `getPlayer` to figure out the player and will inject that value into the `Square`:
-
-```javascript
-function mapStateToProps (state, { index }) {
-  const moves = getMoves(state)
-
-  return {
-    player: getPlayer(index, moves)
-  }
-}
-```
-
-Here we destructure the `index` from the Square's `props` (the `props` are the second argument provided by `connect` to the `mapStateToProps` function). Then we use the `getMoves` selector to extract the `moves` array. Finally, we use `getPlayer` to determine the player using the index of this Square and the list of moves, and we inject that into the `Square` component as a `player` prop.
-
-Now we need to create our `handleClick` event handler prop. We'll use `mapDispatchToProps` and our `squareClicked` action creator:
-
-```javascript
-function mapDispatchToProps (dispatch, { index }) {
-  return {
-    handleClick: () => dispatch(squareClicked(index))
-  }
-}
-```
-
-`handleClick` is a function that takes no parameters (as an event handler, it will get an event object, but we don't need it) and then uses the `squareClicked` action creator and the `index` of the Square to create a `SQUARE_CLICKED` action and finally dispatches it to the store so the state can be updated by the reducer.
-
-To finish it up, we wrap our state management around the `Square` using `connect`. Here is our final container (`src/containers/Square/index.js`):
-
-```javascript
-import Square from '../../components/Square'
-import { connect } from 'react-redux'
-import { getMoves } from '../../state/selectors'
-import getPlayer from '../../utilities/getPlayer'
-import { squareClicked } from '../../state/actions'
-
-function mapStateToProps (state, { index }) {
-  const moves = getMoves(state)
-
-  return {
-    player: getPlayer(index, moves)
-  }
-}
-
-function mapDispatchToProps (dispatch, { index }) {
-  return {
-    handleClick: () => dispatch(squareClicked(index))
-  }
-}
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Square)
-```
-
-Let's clean up the `src/components/Square/index.js` component so we only pass what's needed:
-
-```jsx
-import * as React from 'react'
-
-import { isUndefined } from 'ramda-adjunct'
-import styled from 'styled-components'
-
+// In src/components/Square/index.js
 const StyledSquare = styled.div`
   border-color: hsla(0, 0%, 0%, 0.2);
   border-style: solid;
-  border-width: 0 ${props => (props.index % 3 === 2 ? 0 : '2px')}
-    ${props => (props.index < 6 ? '2px' : 0)} 0;
-  color: ${props =>
-    props.player === 'x' ? 'hsla(6, 59%, 50%, 1)' : 'hsla(145, 63%, 32%, 1)'};
-  cursor: ${({ onClick }) => (isUndefined(onClick) ? 'default' : 'pointer')}
+  border-width: 0 ${({ index }) => (index % 3 === 2 ? 0 : '2px')}
+    ${({ index }) => (index < 6 ? '2px' : 0)} 0;
+  cursor: default;
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
   text-align: center;
   text-transform: uppercase;
 `
-StyledSquare.displayName = 'StyledSquare'
 
-export default function Square ({ handleClick, index, player }) {
-  return isUndefined(player) ? (
-    <StyledSquare index={index} onClick={handleClick} />
-  ) : (
-    <StyledSquare index={index} player={player}>
-      {player}
-    </StyledSquare>
-  )
-}
+const SquarePlayed = StyledSquare.extend`
+  color: ${({ player }) => (player === 'x' ? 'hsla(6, 59%, 50%, 1)' : 'hsla(145, 63%, 32%, 1)')};
+`
+
+const SquareLost = StyledSquare.extend`
+  color: hsla(0, 0%, 90%, 1);
+`
+
+const SquarePlayable = StyledSquare.extend`
+  cursor: pointer;
+`
 ```
 
-Finally, let's update our `src/components/App/index.js` file so that we import the `Square` from `src/containers` rather than from `src/components`. We want the _connected_ version, right? The one that will interact with our new state.
-
-Update `src/components/App/index.js` to look like this:
+Then we can extend our `Square` to use the right styled square. Read through the code below and make sure you understand what we're doing:
 
 ```javascript
-import * as React from 'react'
+// In src/components/Square/index.js
+export default function Square ({
+  handleClick,
+  index,
+  isWinningSquare,
+  player
+}) {
+  if (isUndefined(isWinningSquare)) {
+    return isUndefined(player)
+      ? <SquarePlayable index={index} onClick={handleClick} />
+      : <SquarePlayed index={index} player={player}>{player}</SquarePlayed>
+  }
 
-import Board from '../Board'
-import Square from '../../containers/Square'
-import styled from 'styled-components'
-import { times } from 'ramda'
+  if (isUndefined(player)) {
+    return <StyledSquare index={index} />
+  }
 
-const NUMBER_OF_SQUARES = 9
-
-const StyledApp = styled.div`
-  display: grid;
-  font-family: 'Verdana', sans-serif;
-  grid-template-areas: 'board';
-  height: 100vh;
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-`
-StyledApp.defaultName = 'StyledApp'
-
-export default function App () {
-  return (
-    <StyledApp>
-      <Board>
-        {times(
-          square => (
-            <Square key={square} index={square} />
-          ),
-          NUMBER_OF_SQUARES
-        )}
-      </Board>
-    </StyledApp>
-  )
+  return isWinningSquare
+    ? <SquarePlayed index={index} player={player}>{player}</SquarePlayed>
+    : <SquareLost index={index} player={player}>{player}</SquareLost>
 }
 ```
 
-If we run the app now and check our React Dev Tools to see what rerenders on each click, we find that only the clicked Square rerenders. That's much nicer! Wait! It used to, but something has gone wrong. Not sure whether it is React that is still re-rendering the entire app, or the React Dev Tools that is getting it wrong, but investigation will have to wait for another day.
+If `isWinningSquare` is `undefined`, then the game is still in play. Squares are either played or playable.
 
-So far so good. What happens when we check our test coverage? Our tests break! We need to provide a store for our `App` component because it is rendering `Square` components that are containers and expect to have a store available. We can use `redux-mock-store` for this. Change `src/components/App/index.spec.js` to look like this:
+Below that we handle conditions where the game is over. If the square is unplayed, we can use the base `StyledSquare`. As long as we don't pass the `handleClick` function to `onClick`, it remains unplayable.
 
-```jsx
-import * as React from 'react'
+Finally, we have the squares that were played during the game. If a square is a winning square, we leave it alone (and use `SquarePlayed` as above), but if it is a losing square, we swap in the `SquareLost` component, which greys out the player.
 
-import App from './'
-import { Provider } from 'react-redux'
-import configureStore from 'redux-mock-store'
+Here's the full code for `src/components/Square/index.js`:
+
+```javascript
+// src/components/Square/index.js
+import React from 'react'
+import styled from 'styled-components'
+import { isUndefined } from 'ramda-adjunct'
+
+const StyledSquare = styled.div`
+  border-color: hsla(0, 0%, 0%, 0.2);
+  border-style: solid;
+  border-width: 0 ${({ index }) => (index % 3 === 2 ? 0 : '2px')}
+    ${({ index }) => (index < 6 ? '2px' : 0)} 0;
+  cursor: default;
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+`
+StyledSquare.defaultName = 'StyledSquare'
+
+const SquarePlayed = StyledSquare.extend`
+  color: ${({ player }) => (player === 'x' ? 'hsla(6, 59%, 50%, 1)' : 'hsla(145, 63%, 32%, 1)')};
+`
+SquarePlayed.defaultName = 'SquarePlayed'
+
+const SquareLost = StyledSquare.extend`
+  color: hsla(0, 0%, 90%, 1);
+`
+SquareLost.defaultName = 'SquareLost'
+
+const SquarePlayable = StyledSquare.extend`
+  cursor: pointer;
+`
+SquarePlayable.defaultName = 'SquarePlayable'
+
+export default function Square ({
+  handleClick,
+  index,
+  isWinningSquare,
+  player
+}) {
+  if (isUndefined(isWinningSquare)) {
+    return isUndefined(player)
+      ? <SquarePlayable index={index} onClick={handleClick} />
+      : <SquarePlayed index={index} player={player}>{player}</SquarePlayed>
+  }
+
+  if (isUndefined(player)) {
+    return <StyledSquare index={index} />
+  }
+
+  return isWinningSquare
+    ? <SquarePlayed index={index} player={player}>{player}</SquarePlayed>
+    : <SquareLost index={index} player={player}>{player}</SquareLost>
+}
+
+```
+
+## Connecting it up
+
+Now all that remains is to connect it all up. We'll do this in `src/containers/Square/index.js`. But first, let's write a test to "map state properly to props when the game is over" and add it to `src/containers/Square/index.spec.js`:
+
+```javascript
+// src/containers/Square/index.spec.js
+import React from 'react'
 import { shallow } from 'enzyme'
+import configureStore from 'redux-mock-store'
 
-const middlewares = []
-const mockStore = configureStore(middlewares)
-const store = mockStore({ moves: [4, 0, 1] })
+import Square from '.'
+import { initialState, SQUARE_CLICKED } from '../../state'
 
-describe('components:App', () => {
-  it('renders the App with a blank game board and nine squares', () => {
-    expect(
-      toJson(
-        shallow(
-          <Provider store={store}>
-            <App />
-          </Provider>
-        )
-          .first()
-          .render()
-      )
-    ).toMatchSnapshot()
+const mockStore = configureStore()
+
+describe('containers:Square', () => {
+  it(`maps state and dispatch to props`, () => {
+    const square = 4
+    const store = mockStore({ moves: [0, 3, square] })
+    const wrapper = shallow(<Square index={square} store={store} />)
+
+    expect(wrapper.props()).toEqual(
+      expect.objectContaining({
+        player: 'x',
+        handleClick: expect.any(Function)
+      })
+    )
+  })
+
+  it(`maps state properly to props when the game is over`, () => {
+    const square = 4
+    const store = mockStore({
+      moves: [0, 1, 4, 5, 8],
+      winningSquares: [0, 4, 8],
+      winningPlayer: 'x'
+    })
+    const wrapper = shallow(<Square index={square} store={store} />)
+
+    expect(wrapper.props()).toEqual(
+      expect.objectContaining({
+        isWinningSquare: true
+      })
+    )
+  })
+
+  it(`maps handleClick to dispatch ${SQUARE_CLICKED} action`, () => {
+    const square = 4
+    const store = mockStore(initialState)
+
+    store.dispatch = jest.fn()
+
+    const wrapper = shallow(<Square index={square} store={store} />)
+
+    wrapper.dive().props().onClick()
+
+    expect(store.dispatch).toHaveBeenCalledWith({
+      type: SQUARE_CLICKED,
+      payload: {
+        square
+      }
+    })
   })
 })
 ```
 
-Now you can run the tests and update them with `u` and they should pass. Check out the new App snapshot to see the changes. The next time we update this tutorial, we'll switch to React Hooks and the React Testing Library and will do things a bit differently, but this will have to do for now. We'll leave the `Square` container untested for the moment (except manually, of course).
-
-## One last thing
-
-It would be nice to see what's happening in our state. The [redux-devtools-extension](http://extension.remotedev.io/) is just what we need. We added it way back during set up. Now let's put it to use. All we need is one little change in one file. In `src/state/store/index.js` we'll import the `devToolsEnhancer`, and then we'll use it to enhance the store: `createStore(rootReducer, devToolsEnhancer())`. Here's our new code:
+It's pretty straightforward. We'll just show you the code here and let you figure it out:
 
 ```javascript
-import { createStore } from 'redux'
-import { devToolsEnhancer } from 'redux-devtools-extension'
-import { rootReducer } from '../reducers'
+// src/containers/Square/index.js
+import { connect } from 'react-redux'
+import { contains } from 'ramda'
+import { isNotEmpty } from 'ramda-adjunct'
 
-export default function configureStore () {
-  return createStore(rootReducer, devToolsEnhancer())
+import Square from '../../components/Square'
+import { getMoves, getWinningSquares, squareClicked } from '../../state'
+import { getPlayer } from '../../utilities'
+
+function mapStateToProps (state, { index }) {
+  const moves = getMoves(state)
+  const winners = getWinningSquares(state) || []
+  const gameIsOver = isNotEmpty(winners)
+  const player = getPlayer(index, moves)
+
+  return gameIsOver
+    ? { player, isWinningSquare: contains(index, winners) }
+    : { player }
+}
+
+function mapDispatchToProps (dispatch, { index }) {
+  return {
+    handleClick: () => dispatch(squareClicked(index))
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Square)
+```
+
+## Triggering the check
+
+We don't currently have a way to trigger the check for a win. We'll add this in the next lesson (branch). But we can test it now using Redux DevTools in Chrome. If you open the DevTools, you should see a button at the bottom called "Dispatcher":
+
+![Dispatcher button](/assets/dispatcher-button.png)
+
+If you click on it, you should see an empty action like this:
+
+![Empty action](/assets/empty-action.png)
+
+Let's start by playing out a game like this (start in the upper right and go around the outer squares, then click the center square last):
+
+![All squares played](/assets/all-squares-played.png)
+
+Now, let's add the action to look like this:
+
+```javascript
+{
+  type: 'GAME_OVER',
+  winners: {
+    squares: [0, 2, 4, 6, 8],
+    player: 'x'
+  }
 }
 ```
 
-You'll need to install the Chrome or Firefox extension and use one of those browsers to see the Redux DevTools. Here's an example screenshot:
+Which will look like this:
 
-![Redux DevTools](./assets/redux-devtools.png)
+![Game over action](/assets/game-over-action.png)
+
+We can then click the "dispatch" button on the far right to dispatch our action:
+
+![Dispatch button](/assets/dispatch-button.png)
+
+Now we should see the board change to reflect the wins, and all squares should be unplayable:
+
+![All squares game over](/assets/all-squares-game-over.png)
+
+That's enough for this step. Let's do a commit:
 
 ```bash
 git add -A
-git commit -m "Add Redux DevTools"
+git commit -m "Mark the winning squares"
 git push
 ```
+We can run the tests to make sure we have 100% coverage (you may need to run `yarn test` then hit `u` to update a few snapshots). Run `yarn test --coverage` to double check:
+
+![Step 5 100% coverage](/assets/step-05-100-percent-coverage.png)
