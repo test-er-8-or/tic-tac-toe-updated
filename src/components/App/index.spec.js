@@ -1,14 +1,26 @@
 import * as React from 'react'
 
 import App from './'
+import { Provider } from 'react-redux'
+import configureStore from 'redux-mock-store'
 import { shallow } from 'enzyme'
 
-describe('components:App', () => {
-  it('matches the snapshot', () => {
-    expect(toJson(shallow(<App />))).toMatchSnapshot()
-  })
+const middlewares = []
+const mockStore = configureStore(middlewares)
+const store = mockStore({ moves: [4, 0, 1] })
 
-  it('matches the snapshot with three moves: center, top-left, top-right', () => {
-    expect(toJson(shallow(<App moves={[4, 0, 2]} />))).toMatchSnapshot()
+describe('components:App', () => {
+  it('renders the App with a blank game board and nine squares', () => {
+    expect(
+      toJson(
+        shallow(
+          <Provider store={store}>
+            <App />
+          </Provider>
+        )
+          .first()
+          .render()
+      )
+    ).toMatchSnapshot()
   })
 })

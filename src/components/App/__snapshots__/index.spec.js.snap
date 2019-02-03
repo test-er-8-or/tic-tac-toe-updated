@@ -1,105 +1,149 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components:App matches the snapshot 1`] = `
-<StyledApp>
-  <Board>
-    <Square
-      handleClick={[Function]}
-      index={0}
-      key="0"
-    />
-    <Square
-      handleClick={[Function]}
-      index={1}
-      key="1"
-    />
-    <Square
-      handleClick={[Function]}
-      index={2}
-      key="2"
-    />
-    <Square
-      handleClick={[Function]}
-      index={3}
-      key="3"
-    />
-    <Square
-      handleClick={[Function]}
-      index={4}
-      key="4"
-    />
-    <Square
-      handleClick={[Function]}
-      index={5}
-      key="5"
-    />
-    <Square
-      handleClick={[Function]}
-      index={6}
-      key="6"
-    />
-    <Square
-      handleClick={[Function]}
-      index={7}
-      key="7"
-    />
-    <Square
-      handleClick={[Function]}
-      index={8}
-      key="8"
-    />
-  </Board>
-</StyledApp>
-`;
+exports[`components:App renders the App with a blank game board and nine squares 1`] = `
+.c1 {
+  -webkit-align-self: center;
+  -ms-flex-item-align: center;
+  align-self: center;
+  display: grid;
+  grid-area: board;
+  grid-gap: 0;
+  grid-template-areas: 'zero one two' 'three four five' 'six seven eight';
+  grid-template-columns: 20vh 20vh 20vh;
+  grid-template-rows: 20vh 20vh 20vh;
+  height: 60vh;
+  justify-self: center;
+  margin: auto;
+  width: 60vh;
+}
 
-exports[`components:App matches the snapshot with three moves: center, top-left, top-right 1`] = `
-<StyledApp>
-  <Board>
-    <Square
-      index={0}
-      key="0"
-      player="o"
+.c2 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 2px 2px 0;
+  color: hsla(145,63%,32%,1);
+  cursor: default;
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.c3 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 2px 2px 0;
+  color: hsla(6,59%,50%,1);
+  cursor: default;
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.c4 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 0 2px 0;
+  color: hsla(145,63%,32%,1);
+  cursor: pointer;
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.c5 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 2px 2px 0;
+  color: hsla(145,63%,32%,1);
+  cursor: pointer;
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.c6 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 2px 0 0;
+  color: hsla(145,63%,32%,1);
+  cursor: pointer;
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.c7 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 0 0 0;
+  color: hsla(145,63%,32%,1);
+  cursor: pointer;
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.c0 {
+  display: grid;
+  font-family: 'Verdana',sans-serif;
+  grid-template-areas: 'board';
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+}
+
+<div
+  class="c0"
+>
+  <div
+    class="c1"
+  >
+    <div
+      class="c2"
+    >
+      o
+    </div>
+    <div
+      class="c3"
+    >
+      x
+    </div>
+    <div
+      class="c4"
     />
-    <Square
-      handleClick={[Function]}
-      index={1}
-      key="1"
+    <div
+      class="c5"
     />
-    <Square
-      index={2}
-      key="2"
-      player="x"
+    <div
+      class="c3"
+    >
+      x
+    </div>
+    <div
+      class="c4"
     />
-    <Square
-      handleClick={[Function]}
-      index={3}
-      key="3"
+    <div
+      class="c6"
     />
-    <Square
-      index={4}
-      key="4"
-      player="x"
+    <div
+      class="c6"
     />
-    <Square
-      handleClick={[Function]}
-      index={5}
-      key="5"
+    <div
+      class="c7"
     />
-    <Square
-      handleClick={[Function]}
-      index={6}
-      key="6"
-    />
-    <Square
-      handleClick={[Function]}
-      index={7}
-      key="7"
-    />
-    <Square
-      handleClick={[Function]}
-      index={8}
-      key="8"
-    />
-  </Board>
-</StyledApp>
+  </div>
+</div>
 `;
