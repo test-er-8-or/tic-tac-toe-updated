@@ -280,29 +280,34 @@ Let's update our `src/components/App/index.js` file to use `getPlayer` and, on t
 * Provide a click handler to the Square if the player is `undefined` (we'll use a stubbed function for the moment)
 * Set the player to 'x' or 'y', respectively, if the player is defined
 
-We can do this in our `makeSquares` function. First we'll import our `getPlayer` function: `import { getPlayer } from '../../utilities'`. Then we'll update our function (and use a named function in the process):
+We can do this in our `makeSquares` function. First we'll import our `getPlayer` function: `import getPlayer from '../../utilities/getPlayer'`. Then we'll update our function (and use a named function in the process):
 
-```javascript
-import React from 'react'
+```jsx
+import * as React from 'react'
+
+import Board from '../Board'
+import Square from '../Square'
+import getPlayer from '../../utilities/getPlayer'
+import { isUndefined } from 'ramda-adjunct'
 import styled from 'styled-components'
 import { times } from 'ramda'
-import { isUndefined } from 'ramda-adjunct'
 
-import { Board, Square } from '..'
-import { getPlayer } from '../../utilities'
+const NUMBER_OF_SQUARES = 9
 
 function makeSquares (moves) {
   return times(square => {
     const player = getPlayer(square, moves)
 
-    return isUndefined(player)
-      ? <Square
+    return isUndefined(player) ? (
+      <Square
         key={square}
         index={square}
         handleClick={() => console.log(`Square ${square}`)}
-        />
-      : <Square key={square} index={square} player={player} />
-  }, 9)
+      />
+    ) : (
+      <Square key={square} index={square} player={player} />
+    )
+  }, NUMBER_OF_SQUARES)
 }
 
 const StyledApp = styled.div`
@@ -314,7 +319,7 @@ const StyledApp = styled.div`
   padding: 0;
   width: 100vw;
 `
-StyledApp.defaultName = 'StyledApp'
+StyledApp.displayName = 'StyledApp'
 
 export default function App ({ moves = [4, 0, 2] /* mock */ }) {
   return (
@@ -328,7 +333,7 @@ export default function App ({ moves = [4, 0, 2] /* mock */ }) {
 Things to note:
 
 * We imported the `isUndefined` function from 'ramda-adjunct'
-* We imported the `getPlayer` utility function from '../../utilities'
+* We imported the `getPlayer` utility function from '../../utilities/getPlayer'
 * Our `makeSquares` function has grown considerably, but all the changes are in the anonymous function we pass to the `times` method
   * That function used to look like this: `idx => <Square key={idx} index={idx} player={idx % 2 === 0 ? 'x' : 'o'} />`
   * Now we've renamed `idx` to be `square`, which is clearer
@@ -344,7 +349,7 @@ This is our new output. Note that the Squares that have been played have the cor
 
 Let's add a new snapshot to cover this new situation where some squares are played. First, let's remove our mock `moves` array from `src/components/App/index.js`:
 
-```javascript
+```jsx
 export default function App ({ moves = [] }) {
   return (
     <StyledApp>
@@ -356,42 +361,32 @@ export default function App ({ moves = [] }) {
 
 Then, in `src/components/App/index.spec.js`, put:
 
-```javascript
-import React from 'react'
+```jsx
+import * as React from 'react'
+
+import App from './'
 import { shallow } from 'enzyme'
 
-import App from '.'
-
 describe('components:App', () => {
-  it('renders the App with a blank game board and nine squares', () => {
-    expect(toJson(shallow(<App />).dive())).toMatchSnapshot()
+  it('matches the snapshot', () => {
+    expect(toJson(shallow(<App />))).toMatchSnapshot()
   })
 
-  it('renders the App with a game board three moves: center, top-left, top-right', () => {
-    expect(toJson(shallow(<App moves={[4, 0, 2]} />).dive())).toMatchSnapshot()
+  it('matches the snapshot with three moves: center, top-left, top-right', () => {
+    expect(toJson(shallow(<App moves={[4, 0, 2]} />))).toMatchSnapshot()
   })
 })
 ```
 
+Note that we no longer want to drill down a level, so be sure to remove the `.first().render()` from each snapshot test. That will allow us to see the `props` being passed into the `Square` components, rather than seeing the `StyledSquare` components below them.
+
 Run the tests with `yarn test`, then hit `u` to update the snapshots. Then take a look in `src/components/App/__snapshots/index.spec.js.snap` and you should see something like this:
 
-```javascript
+```jsx
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components:App renders the App with a blank game board and nine squares 1`] = `
-.c0 {
-  display: grid;
-  font-family: 'Verdana',sans-serif;
-  grid-template-areas: 'board';
-  height: 100vh;
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-}
-
-<div
-  className="c0"
->
+exports[`components:App matches the snapshot 1`] = `
+<StyledApp>
   <Board>
     <Square
       handleClick={[Function]}
@@ -439,23 +434,11 @@ exports[`components:App renders the App with a blank game board and nine squares
       key="8"
     />
   </Board>
-</div>
+</StyledApp>
 `;
 
-exports[`components:App renders the App with a game board three moves: center, top-left, top-right 1`] = `
-.c0 {
-  display: grid;
-  font-family: 'Verdana',sans-serif;
-  grid-template-areas: 'board';
-  height: 100vh;
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-}
-
-<div
-  className="c0"
->
+exports[`components:App matches the snapshot with three moves: center, top-left, top-right 1`] = `
+<StyledApp>
   <Board>
     <Square
       index={0}
@@ -503,7 +486,7 @@ exports[`components:App renders the App with a game board three moves: center, t
       key="8"
     />
   </Board>
-</div>
+</StyledApp>
 `;
 ```
 
