@@ -403,9 +403,8 @@ git push
 So our reducer will take the `squares` and `player` from the `GAME_OVER` action payload and store them in the state as `winningSquares` and `winningPlayer` respectively, flattening out our `winners` object from the payload. We'll start with the tests, of course. Let's make `src/state/reducers/index.spec.js` look like this:
 
 ```javascript
-// src/state/reducers/index.spec.js
-import { initialState, rootReducer } from '.'
-import { gameOver, squareClicked } from '..'
+import { gameOver, squareClicked } from '../actions'
+import { initialState, rootReducer } from './'
 
 describe('state:reducers', () => {
   describe('rootReducer', () => {
@@ -457,10 +456,9 @@ describe('state:reducers', () => {
 Note that last test. That's our new one. Run the tests with `yarn test` and it fails. Now we'll add the code to make it pass to the reducer in `src/state/reducers/index.js`:
 
 ```javascript
-// src/state/reducers/index.js
-import { isUndefined } from 'ramda-adjunct'
+import { GAME_OVER, SQUARE_CLICKED } from '../constants'
 
-import { GAME_OVER, SQUARE_CLICKED } from '..'
+import { isUndefined } from 'ramda-adjunct'
 
 const initialState = { moves: [] }
 
