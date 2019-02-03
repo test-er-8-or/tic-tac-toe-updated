@@ -344,20 +344,6 @@ Finally, we can push our changes up to GitHub:
 git push
 ```
 
-You should see something like this:
-
-![Git set upstream origin](./assets/set-origin.png)
-
-This happens because we don't have this branch on our remote repository yet. Git helpfully gives you the line you need to run to create the remote branch and push your changes, so let's do that:
-
-```bash
-git push --set-upstream origin 00-set-up
-```
-
-You should now see this:
-
-![Git successful push](./assets/git-successful-push.png)
-
 If you go to your repository on GitHub and reload the page, you should see all your changes. Nifty, eh?
 
 # Cleaning up the cruft
