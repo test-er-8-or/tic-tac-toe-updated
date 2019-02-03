@@ -6,6 +6,7 @@ exports[`components:Square matches the snapshot for player O in the bottom right
   border-style: solid;
   border-width: 0 0 0 0;
   color: hsla(145,63%,32%,1);
+  cursor: default;
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
@@ -26,6 +27,7 @@ exports[`components:Square matches the snapshot for player O in the top left squ
   border-style: solid;
   border-width: 0 2px 2px 0;
   color: hsla(145,63%,32%,1);
+  cursor: default;
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
@@ -46,6 +48,7 @@ exports[`components:Square matches the snapshot for player O in the top right sq
   border-style: solid;
   border-width: 0 0 2px 0;
   color: hsla(145,63%,32%,1);
+  cursor: default;
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
@@ -66,6 +69,7 @@ exports[`components:Square matches the snapshot for player X in the bottom left 
   border-style: solid;
   border-width: 0 2px 0 0;
   color: hsla(6,59%,50%,1);
+  cursor: default;
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
@@ -86,6 +90,7 @@ exports[`components:Square matches the snapshot for player X in the top left squ
   border-style: solid;
   border-width: 0 2px 2px 0;
   color: hsla(6,59%,50%,1);
+  cursor: default;
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
@@ -98,4 +103,23 @@ exports[`components:Square matches the snapshot for player X in the top left squ
 >
   x
 </div>
+`;
+
+exports[`components:Square matches the snapshot when a click handler is provided 1`] = `
+.c0 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 2px 2px 0;
+  color: hsla(145,63%,32%,1);
+  cursor: pointer;
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+<div
+  class="c0"
+/>
 `;

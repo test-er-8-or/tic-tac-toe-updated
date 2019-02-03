@@ -1,288 +1,98 @@
-# Adding snapshot tests for our React components
+# Making the board interactive
 
-We're going to add tests that take a "snapshot" of our shallowly rendered components. Then each time we run our test suite, we'll shallowly render the component again and check that output against our previous snapshot. This way we are warned when our component's output changes, and we can make sure that the output is what we expected it to be.
+Our next move (pun intended) is to make the board interactive. We want to be able to click on a square and have an X or an O appear&mdash;but only when we click on an empty square.
 
-`create-react-app` allows us to add our own test setup in a file called `src/setupTests.js`. Whatever we put in that file will be loaded before any tests are run. Think of it as a global configuration for our tests.
+How do we know which player is clicking? Is it an X or an O? Well, for our minimum viable product (MVP), we're going to keep it simple by making a rule: X moves first. This means that move zero&mdash;remember that our `moves` will be stored in a JavaScript Array, and that in JavaScript, Array indices start at zero&mdash;will be X.
 
-Create the file now, and add this code:
+Move one will be O, move two will be X, move three will be O, etc. And by now you should be seeing a nice benefit of this rule. Can you guess it?
 
-```jsx
-import Enzyme from 'enzyme'
-import Adapter from 'enzyme-adapter-react-16'
-import 'jest-enzyme'
-import 'jest-styled-components'
-import toJson from 'enzyme-to-json'
+It is this: all of the even-numbered moves are X moves; all of the odd-numbered moves are O moves.
 
-Enzyme.configure({ adapter: new Adapter() })
+So let's say that we have a moves array like this: `[4, 0, 2]`. We know that X moved first to the center square (4), then O took the upper left square (0), and then X took the upper right square (2). That's a lot of information packed into a simple array. We know the players, we know who moved when (the order), and we know which squares were involved.
 
-global.toJson = toJson
-```
+And from this array we can figure out the player on each square, right? If we suggest that the player is determined by `move % 2 == 0 ? 'x' : 'o'`, then we can see that the moves to squares 4 and 2 are X moves (0 and 2 are evenly divided by 2), and the move to square 0 is O (1 leaves a remainder of 1 when divided by 2).
 
-First we import Enzyme, which is an AirBnB-created library that helps us to render and test React components. We also need the React version 16 adapter so we can use it with React version 16, which is what we're using to build our game. We can also import all the test "matcher" methods from the `jest-enzyme` library. You'll see these in action later. Then `jest-styled-components` let's us work with `styled-components` in our snapshot tests. Finally, `enzyme-to-json` makes our snapshots prettier and easier to read (for humans, which is what most of us are, probably).
+(Remember that `%` is the modulus (remainder) operator&mdash;it returns the _remainder_ left over when the left hand number is divided by the right hand number, so `3 % 2` is `1` and `4 % 2` is `0`. Anything that returns `1` when modulo `2` is an odd number; anything that returns `0` when modulo `2` is an even number.)
 
-Then we tell Enzyme to use the React 16 Adapter. Finally, we put the `enzyme-to-json` `toJson` function in our `global` object, which is imported into all our test files. That just prevents us from having to import it in every test file.
-
-# First test
-
-Now we'll add our first test. We'll use the extension `spec.js` for all our test files. The `spec` part indicates that we are using a [Behaviour-Driven Development (BDD)](https://en.wikipedia.org/wiki/Behavior-driven_development) style. Don't worry too much about that. The link is for folks who _just have to know_.
-
-So let's create a `src/components/App/index.spec.js` file and add the following code:
+But first, let's add a click handler to our square. We'll pass it in as a prop, so it's pretty simple. Here's our updated `src/components/Square/index.js` file:
 
 ```jsx
 import * as React from 'react'
 
-import App from './'
-import { shallow } from 'enzyme'
+import styled from 'styled-components'
 
-describe('components:App', () => {
-  it('matches the snapshot', () => {
-    expect(toJson(shallow(<App />))).toMatchSnapshot()
-  })
-})
-```
-
-The `shallow` renderer will render our React component, but only one level deep. That means that subcomponents will not be fully rendered. But that's OK because we'll test those components individually. Shallow rendering is fast and makes it easier to debug problems because we know that _they're only one level deep!_
-
-We need to import our App component, of course, and here you can see the benefit of using folders with the component name: our components and their tests (and the `__snapshots__` folder to come) are all neatly contained in one spot.
-
-We will group our tests in `describe` blocks, which are just function calls. The `describe` block takes a string description and a function that will group one or more tests together.
-
-Inside the `describe` block, we add a `test` block. `it` is an alias for `test`. I prefer it because it is more readable (and more of a BDD style). Like the `describe` block, `it` takes a string description of the test and a function that runs the actual test.
-
-In the `it` block we call `shallow(<App />)`, passing it our `<App />` component. That renders the `<App />` component _just one level deep. We pass that to our `toJson` function imported from `enzyme-to-json`, which will pretty it up for us. Then we pass that to our `expect` function, and call the expect's "matcher" method `toMatchSnapshot`. This creates our snapshot if it doesn't exist (and puts it in a `__snapshots__` folder). If a snapshot exists, then it compares the two and either passes if they match, or throws an error if they don't.
-
-Simple, really.
-
-We can run our tests:
-
-```bash
-yarn test
-```
-
-This will run our tests _in watch mode_. Which means it will stay running (kill it with `q`). Each time we update a file or a test, it will re-run.
-
-The first time we run `yarn test`, we should see this:
-
-![First snapshot test](./assets/first-snapshot-test.png)
-
-Hit `q` to exit the tests, then take a look at the `src/components/App/__snapshots__/index.spec.js.snap` file and you should see this:
-
-```jsx
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`components:App matches the snapshot 1`] = `
-<StyledApp>
-  <Board>
-    <Square
-      index={0}
-      key="0"
-      player="x"
-    />
-    <Square
-      index={1}
-      key="1"
-      player="o"
-    />
-    <Square
-      index={2}
-      key="2"
-      player="x"
-    />
-    <Square
-      index={3}
-      key="3"
-      player="o"
-    />
-    <Square
-      index={4}
-      key="4"
-      player="x"
-    />
-    <Square
-      index={5}
-      key="5"
-      player="o"
-    />
-    <Square
-      index={6}
-      key="6"
-      player="x"
-    />
-    <Square
-      index={7}
-      key="7"
-      player="o"
-    />
-    <Square
-      index={8}
-      key="8"
-      player="x"
-    />
-  </Board>
-</StyledApp>
-`;
-```
-
-Pretty easy to read, right? Note that the `Square` components were not further rendered into their `div` elements. That's shallow rendering at work.
-
-Time for a commit:
-
-```bash
-git add -A
-git commit -m "Add the test configuration and first snapshot test"
-git push
-```
-
-## Adding the remaining snapshots
-
-### Board
-
-Create `src/components/Board/index.spec.js` and add the following code:
-
-```javascript
-import * as React from 'react'
-
-import Board from './'
-import { shallow } from 'enzyme'
-
-describe('components:Board', () => {
-  it('matches the snapshot', () => {
-    expect(toJson(shallow(<Board />))).toMatchSnapshot()
-  })
-})
-```
-
-Then run `yarn test` and let's see what the snapshot looks like. If we check `src/components/Board/__snapshots__/index.spec.js.snap`, we find:
-
-```jsx
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`components:Board matches the snapshot 1`] = `
-<StyledComponent
-  forwardedComponent={
-    Object {
-      "$$typeof": Symbol(react.forward_ref),
-      "attrs": Array [],
-      "componentStyle": ComponentStyle {
-        "componentId": "sc-bdVaJa",
-        "isStatic": true,
-        "rules": Array [
-          "
-  align-self: center;
-  display: grid;
-  grid-area: board;
-  grid-gap: 0;
-  grid-template-areas: 'zero one two' 'three four five' 'six seven eight';
-  grid-template-columns: 20vh 20vh 20vh;
-  grid-template-rows: 20vh 20vh 20vh;
-  height: 60vh;
-  justify-self: center;
-  margin: auto;
-  width: 60vh;
-",
-        ],
-      },
-      "displayName": "Board",
-      "foldedComponentIds": Array [],
-      "render": [Function],
-      "styledComponentId": "sc-bdVaJa",
-      "target": "div",
-      "toString": [Function],
-      "warnTooManyClasses": [Function],
-      "withComponent": [Function],
-    }
-  }
-  forwardedRef={null}
-/>
-`;
-```
-
-You can see that `jest-styled-components` has included our CSS styles. Now, when a style changes, so does the snapshot. That's handy, no?
-
-### Square
-
-Let's add the `Square` snapshot test next. In `src/components/Square/index.spec.js` add this code:
-
-```jsx
-import * as React from 'react'
-
-import Square from './'
-import { shallow } from 'enzyme'
-
-describe('components:Square', () => {
-  it('matches the snapshot', () => {
-    expect(toJson(shallow(<Square />))).toMatchSnapshot()
-  })
-})
-```
-
-And run the tests with `yarn test`.
-
-Now `src/components/Square/__snapshots__/index.spec.js.snap` looks like this:
-
-```jsx
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`components:Square matches the snapshot 1`] = `<StyledSquare />`;
-```
-
-Not very useful, is it? That's because we've wrapped our StyledDiv in another component. Our shallow render only goes one deep! What can we do?
-
-Let's modify the test to render one level deeper into that component:
-
-```jsx
-import * as React from 'react'
-
-import Square from './'
-import { shallow } from 'enzyme'
-
-import * as React from 'react'
-
-import Square from './'
-import { shallow } from 'enzyme'
-
-describe('components:Square', () => {
-  it('matches the snapshot', () => {
-    expect(
-      toJson(
-        shallow(<Square />)
-          .first()
-          .render()
-      )
-    ).toMatchSnapshot()
-  })
-})
-```
-
-Run our test again (or did they run automatically?), and _they fail!_
-
-Well, of course they do! We changed the snapshot, right? That's what they're supposed to do. So now let's hit `u` to update the snapshot, and they should pass. Check the `src/components/Square/__snapshots__/index.spec.js.snap` file again and you should see this:
-
-```jsx
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`components:Square matches the snapshot 1`] = `
-.c0 {
-  border-color: hsla(0,0%,0%,0.2);
+const StyledSquare = styled.div`
+  border-color: hsla(0, 0%, 0%, 0.2);
   border-style: solid;
-  border-width: 0 2px 0 0;
-  color: hsla(145,63%,32%,1);
+  border-width: 0 ${props => (props.index % 3 === 2 ? 0 : '2px')}
+    ${props => (props.index < 6 ? '2px' : 0)} 0;
+  color: ${props =>
+    props.player === 'x' ? 'hsla(6, 59%, 50%, 1)' : 'hsla(145, 63%, 32%, 1)'};
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
   text-align: center;
   text-transform: uppercase;
-}
+`
+StyledSquare.displayName = 'StyledSquare'
 
-<div
-  class="c0"
-/>
-`;
+export default function Square ({ handleClick, index, player }) {
+  return (
+    <StyledSquare index={index} player={player} onClick={handleClick}>
+      {player}
+    </StyledSquare>
+  )
+}
 ```
 
-That's more like it. But doesn't our colour change depending on player? Doesn't our border-width vary according to square index? How can we test all these options?
+Now all we have to do is pass the `handleClick` function to our `<Square />` components (which will do in our `App` component) and we're good to go.
 
-How about more snapshots? Update your `src/components/Square/index.spec.js` file to look like this:
+One thing, though. It would be nice if the cursor over the square turned into a "pointer" (the kind you see when you mouse over a link) when the click handler was present. The `handleClick` function gets passed to the `onClick` prop of the `StyledSquare` component (so it will be called on click!), so we can see it as an `onClick` prop in `StyledSquare`. Now we can change the cursor based on whether the click handler is attached or not:
+
+```jsx
+import * as React from 'react'
+
+import { isUndefined } from 'ramda-adjunct'
+import styled from 'styled-components'
+
+const StyledSquare = styled.div`
+  border-color: hsla(0, 0%, 0%, 0.2);
+  border-style: solid;
+  border-width: 0 ${props => (props.index % 3 === 2 ? 0 : '2px')}
+    ${props => (props.index < 6 ? '2px' : 0)} 0;
+  color: ${props =>
+    props.player === 'x' ? 'hsla(6, 59%, 50%, 1)' : 'hsla(145, 63%, 32%, 1)'};
+  cursor: ${({ onClick }) => (isUndefined(onClick) ? 'default' : 'pointer')}
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+`
+StyledSquare.displayName = 'StyledSquare'
+
+export default function Square ({ handleClick, index, player }) {
+  return (
+    <StyledSquare index={index} player={player} onClick={handleClick}>
+      {player}
+    </StyledSquare>
+  )
+}
+```
+
+If we run our tests now, we'll see that several snapshots fail. Well of course they do. We changed the CSS to add a `cursor` property. We'll need to regenerate them by hitting `u` for "update".
+
+So now we should have five snapshots passing, but if we look at them we'll see a problem. I'll make it easy for you. Just run `yarn test --coverage`. Here's what you should see:
+
+![Coverage changed](./assets/coverage-changed.png)
+
+Whoa! What happened here? Looks like our `Square` coverage is missing a branch (87.5% coverage) and the problem is on line 11, which looks like this:
+
+```jsx
+cursor: ${({ onClick }) => (isUndefined(onClick) ? 'default' : 'pointer')}
+```
+
+No surprise there. That's the line we added. And if you look at the snapshot itself, you'll see that every example sets the cursor to 'default'. We need one that sets it to 'pointer'. So let's update our `src/components/Square/index.spec.js` file to this:
 
 ```jsx
 import * as React from 'react'
@@ -291,6 +101,16 @@ import Square from './'
 import { shallow } from 'enzyme'
 
 describe('components:Square', () => {
+  it('matches the snapshot when a click handler is provided', () => {
+    expect(
+      toJson(
+        shallow(<Square handleClick={() => null} index={0} />)
+          .first()
+          .render()
+      )
+    ).toMatchSnapshot()
+  })
+
   it('matches the snapshot for player O in the top left square', () => {
     expect(
       toJson(
@@ -343,37 +163,16 @@ describe('components:Square', () => {
 })
 ```
 
-Rerun the tests, updating with `u` until they're all passing. Your `src/components/Square/__snapshots__/index.spec.js.snap` should look something like this (note: your order may vary as tests are run in random order):
+We added a test (at the top to make it easier to see) that passes in a very simple function. That should get us a snapshot with the cursor set to 'pointer'. Run `yarn test --coverage`. You should be back at 100% coverage. Then check the `src/components/Square/__shapshots__/index.spec.js.snap` file. There should be a snapshot like this:
 
-```jsx
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`components:Square matches the snapshot for player O in the bottom right square 1`] = `
-.c0 {
-  border-color: hsla(0,0%,0%,0.2);
-  border-style: solid;
-  border-width: 0 0 0 0;
-  color: hsla(145,63%,32%,1);
-  font-size: 16vh;
-  font-weight: bold;
-  line-height: 20vh;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-<div
-  class="c0"
->
-  o
-</div>
-`;
-
-exports[`components:Square matches the snapshot for player O in the top left square 1`] = `
+```javascript
+exports[`components:Square matches the snapshot when a click handler is provided 1`] = `
 .c0 {
   border-color: hsla(0,0%,0%,0.2);
   border-style: solid;
   border-width: 0 2px 2px 0;
   color: hsla(145,63%,32%,1);
+  cursor: pointer;
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
@@ -383,205 +182,224 @@ exports[`components:Square matches the snapshot for player O in the top left squ
 
 <div
   class="c0"
->
-  o
-</div>
-`;
-
-exports[`components:Square matches the snapshot for player O in the top right square 1`] = `
-.c0 {
-  border-color: hsla(0,0%,0%,0.2);
-  border-style: solid;
-  border-width: 0 0 2px 0;
-  color: hsla(145,63%,32%,1);
-  font-size: 16vh;
-  font-weight: bold;
-  line-height: 20vh;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-<div
-  class="c0"
->
-  o
-</div>
-`;
-
-exports[`components:Square matches the snapshot for player X in the bottom left square 1`] = `
-.c0 {
-  border-color: hsla(0,0%,0%,0.2);
-  border-style: solid;
-  border-width: 0 2px 0 0;
-  color: hsla(6,59%,50%,1);
-  font-size: 16vh;
-  font-weight: bold;
-  line-height: 20vh;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-<div
-  class="c0"
->
-  x
-</div>
-`;
-
-exports[`components:Square matches the snapshot for player X in the top left square 1`] = `
-.c0 {
-  border-color: hsla(0,0%,0%,0.2);
-  border-style: solid;
-  border-width: 0 2px 2px 0;
-  color: hsla(6,59%,50%,1);
-  font-size: 16vh;
-  font-weight: bold;
-  line-height: 20vh;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-<div
-  class="c0"
->
-  x
-</div>
-`;
+/>
 ```
 
-Pay special attention to the content of the `<div>` element, which should be `x` or `o`, and the values for `color` and `border-width`. They should change according to the player and the position of the square, respectively. I think we've got all the possibilities covered here, but if you wanted to be really thorough, you could test all nine squares. I'm OK with this.
+Notice that the cursor is set to 'pointer'.
 
-This isn't really the most effective way to do this, but it's a start. If we have time, we'll revisit this later.
+Time for a commit:
 
-## Finishing up
+```bash
+git add -A
+git commit -m "Add click handling to the Squares"
+git push
+```
 
-Let's go back to our `App` test and do a `first().render()` to make sure our CSS is being tested. In `src/components/App/index.js`:
+## Adding a getPlayer utility function
 
-```jsx
-import * as React from 'react'
+We want to add our click handler to any Square that hasn't already been played, and if it has been played, then we want to set the player instead. So we're going to need to know whether a square has been played and, by the way, who played it, X or O.
 
-import App from './'
-import { shallow } from 'enzyme'
+We talked earlier about having a `moves` array that might look like this: `[4, 0, 2]`. We'll write a `getPlayer` function that takes the current Square index and the moves array, determines if there has been a move in this Square, and if there has, returns the player's mark. If there hasn't been a move yet in that square, we'll return `undefined`.
 
-describe('components:App', () => {
-  it('matches the snapshot', () => {
-    expect(
-      toJson(
-        shallow(<App />)
-          .first()
-          .render()
-      )
-    ).toMatchSnapshot()
+Let's start by creating a `src/utilities` folder, and inside that a `src/utilities/getPlayer` folder, and inside that an `index.spec.js` file. That's right, we're going to write the tests first. So in the `src/utilities/getPlayer/index.spec.js` file, add:
+
+```javascript
+import getPlayer from '.'
+
+describe('utilities:getPlayer', () => {
+  it('returns undefined if moves array not provided', () => {
+    expect(getPlayer(4)).toBeUndefined()
+  })
+
+  it('returns `x` for even-numbered moves', () => {
+    expect(getPlayer(4, [4, 0])).toBe('x')
+  })
+
+  it('returns `o` for odd-numbered moves', () => {
+    expect(getPlayer(0, [4, 0])).toBe('o')
+  })
+
+  it('returns undefined for empty squares (not moved yet)', () => {
+    expect(getPlayer(3, [4, 0])).toBeUndefined()
   })
 })
 ```
 
-Update the tests with `u` and check the `src/components/App/__snapshots__/index.spec.js.snap` file and you should see:
+It should be pretty obvious what these tests do, and that they've covered most of our bases, if not all of them. Take the first one: "utilities:getPlayer returns undefined if moves array not provided". Then we have `getPlayer(4)`, which includes the Square's index (the move), but not the array of moves. And we `expect` the return from that function call `toBeUndefined`. Reads like English.
 
-```jsx
+Let's run the tests, but only on this file. Begin with our normal `yarn test`, but once the test harness starts up, hit `p` to filter by file name, type `getPlayer` at the prompt, and hit Enter. It should now run only the tests in the `src/utilities/getPlayer/index.spec.js` file, and you should see all four fail.
+
+Now we'll write the code to make them pass. This style of test-driven development (TDD) is similar to [red-green refactor](http://blog.cleancoder.com/uncle-bob/2014/12/17/TheCyclesOfTDD.html), except we don't have time to be quite as granular as we should be. But you can always write the tests and the code one line at a time.
+
+Here's a first pass at our `getPlayer` utility function. Put it in `src/utilities/getPlayer/index.js`.
+
+```javascript
+import { indexOf } from 'ramda'
+
+export default function getPlayer (square, moves = []) {
+  const move = indexOf(square, moves)
+
+  if (move < 0) {
+    return undefined
+  }
+
+  return move % 2 === 0 ? 'x' : 'o'
+}
+```
+
+The Ramda `indexOf` function gives us the index of an item in an array, or -1 if the item is not in the array. [Try it](http://ramdajs.com/repl/#?const%20arr%20%3D%20%5B%27a%27%2C%20%27b%27%2C%20%27c%27%5D%0A%0Aconsole.log%28indexOf%28%27a%27%2C%20arr%29%29%0Aconsole.log%28indexOf%28%27b%27%2C%20arr%29%29%0Aconsole.log%28indexOf%28%27c%27%2C%20arr%29%29%0Aconsole.log%28indexOf%28%27d%27%2C%20arr%29%29%0A).
+
+We then check if `indexOf(square, moves)` returned a -1, meaning there is no move in that square, and if so, return `undefined`.
+
+Finally, if we haven't already returned `undefined`, then we check whether the move is odd or even, and return 'o' or 'x' accordingly.
+
+Run the tests on `getPlayer` again, and they should all pass.
+
+Keeping our utility functions small and simple makes testing and debugging much easier. This function has a variable assignment, a guard (in case there is no move), and a result, which depends on a simple ternary operator.
+
+Let's add a `src/utilities/index.js` file that imports and re-exports utility functions. Add this code:
+
+```javascript
+import getPlayer from './getPlayer'
+
+export { getPlayer }
+```
+
+And we don't need to include this in our test coverage, so we'll add that to our `package.json` file:
+
+```json
+"collectCoverageFrom": [
+  "!src/registerServiceWorker.js",
+  "!src/index.js",
+  "!src/components/index.js",
+  "!src/utilities/index.js",
+  "src/**/*.{js,jsx}",
+  "!<rootDir>/node_modules/"
+],
+```
+
+Now if we run `yarn test --coverage`, we should see:
+
+![Utilities coverage](./assets/utilities-coverage.png)
+
+So we have a `getPlayer` function. What next?
+
+A commit:
+
+```bash
+git add -A
+git commit -m "Add the getPlayer utility function"
+git push
+```
+
+And then . . .
+
+## Adding the click handler _or_ player to the Squares
+
+Let's update our `src/components/App/index.js` file to use `getPlayer` and, on the basis of what it returns:
+
+* Provide a click handler to the Square if the player is `undefined` (we'll use a stubbed function for the moment)
+* Set the player to 'x' or 'y', respectively, if the player is defined
+
+We can do this in our `makeSquares` function. First we'll import our `getPlayer` function: `import { getPlayer } from '../../utilities'`. Then we'll update our function (and use a named function in the process):
+
+```javascript
+import React from 'react'
+import styled from 'styled-components'
+import { times } from 'ramda'
+import { isUndefined } from 'ramda-adjunct'
+
+import { Board, Square } from '..'
+import { getPlayer } from '../../utilities'
+
+function makeSquares (moves) {
+  return times(square => {
+    const player = getPlayer(square, moves)
+
+    return isUndefined(player)
+      ? <Square
+        key={square}
+        index={square}
+        handleClick={() => console.log(`Square ${square}`)}
+        />
+      : <Square key={square} index={square} player={player} />
+  }, 9)
+}
+
+const StyledApp = styled.div`
+  display: grid;
+  font-family: 'Verdana', sans-serif;
+  grid-template-areas: 'board';
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+`
+StyledApp.defaultName = 'StyledApp'
+
+export default function App ({ moves = [4, 0, 2] /* mock */ }) {
+  return (
+    <StyledApp>
+      <Board>{makeSquares(moves)}</Board>
+    </StyledApp>
+  )
+}
+```
+
+Things to note:
+
+* We imported the `isUndefined` function from 'ramda-adjunct'
+* We imported the `getPlayer` utility function from '../../utilities'
+* Our `makeSquares` function has grown considerably, but all the changes are in the anonymous function we pass to the `times` method
+  * That function used to look like this: `idx => <Square key={idx} index={idx} player={idx % 2 === 0 ? 'x' : 'o'} />`
+  * Now we've renamed `idx` to be `square`, which is clearer
+  * We're also passing in the `moves` array in the call to `makeSquares` (we'll need it below in the anonymous function)
+  * Once we have the player, we check if it is `undefined`
+    * If it's undefined, we return a `Square` with a mock `handleClick` function that just logs out the square number to console
+    * If the player is defined, then we pass that to the `Square` in the `player` prop
+* We're passing in a hard-coded `moves` array in our call to `makeSquares`: this is only temporary so we can see if it works
+
+This is our new output. Note that the Squares that have been played have the correct players, and are not clickable. But click on a few empty squares and take a look in the developer console. You should see something like this:
+
+![Clicking on squares](./assets/clicking-on-squares.png)
+
+Let's add a new snapshot to cover this new situation where some squares are played. First, let's remove our mock `moves` array from `src/components/App/index.js`:
+
+```javascript
+export default function App ({ moves = [] }) {
+  return (
+    <StyledApp>
+      <Board>{makeSquares(moves)}</Board>
+    </StyledApp>
+  )
+}
+```
+
+Then, in `src/components/App/index.spec.js`, put:
+
+```javascript
+import React from 'react'
+import { shallow } from 'enzyme'
+
+import App from '.'
+
+describe('components:App', () => {
+  it('renders the App with a blank game board and nine squares', () => {
+    expect(toJson(shallow(<App />).dive())).toMatchSnapshot()
+  })
+
+  it('renders the App with a game board three moves: center, top-left, top-right', () => {
+    expect(toJson(shallow(<App moves={[4, 0, 2]} />).dive())).toMatchSnapshot()
+  })
+})
+```
+
+Run the tests with `yarn test`, then hit `u` to update the snapshots. Then take a look in `src/components/App/__snapshots/index.spec.js.snap` and you should see something like this:
+
+```javascript
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components:App matches the snapshot 1`] = `
-.c1 {
-  -webkit-align-self: center;
-  -ms-flex-item-align: center;
-  align-self: center;
-  display: grid;
-  grid-area: board;
-  grid-gap: 0;
-  grid-template-areas: 'zero one two' 'three four five' 'six seven eight';
-  grid-template-columns: 20vh 20vh 20vh;
-  grid-template-rows: 20vh 20vh 20vh;
-  height: 60vh;
-  justify-self: center;
-  margin: auto;
-  width: 60vh;
-}
-
-.c2 {
-  border-color: hsla(0,0%,0%,0.2);
-  border-style: solid;
-  border-width: 0 2px 2px 0;
-  color: hsla(6,59%,50%,1);
-  font-size: 16vh;
-  font-weight: bold;
-  line-height: 20vh;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.c3 {
-  border-color: hsla(0,0%,0%,0.2);
-  border-style: solid;
-  border-width: 0 2px 2px 0;
-  color: hsla(145,63%,32%,1);
-  font-size: 16vh;
-  font-weight: bold;
-  line-height: 20vh;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.c4 {
-  border-color: hsla(0,0%,0%,0.2);
-  border-style: solid;
-  border-width: 0 0 2px 0;
-  color: hsla(6,59%,50%,1);
-  font-size: 16vh;
-  font-weight: bold;
-  line-height: 20vh;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.c5 {
-  border-color: hsla(0,0%,0%,0.2);
-  border-style: solid;
-  border-width: 0 0 2px 0;
-  color: hsla(145,63%,32%,1);
-  font-size: 16vh;
-  font-weight: bold;
-  line-height: 20vh;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.c6 {
-  border-color: hsla(0,0%,0%,0.2);
-  border-style: solid;
-  border-width: 0 2px 0 0;
-  color: hsla(6,59%,50%,1);
-  font-size: 16vh;
-  font-weight: bold;
-  line-height: 20vh;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.c7 {
-  border-color: hsla(0,0%,0%,0.2);
-  border-style: solid;
-  border-width: 0 2px 0 0;
-  color: hsla(145,63%,32%,1);
-  font-size: 16vh;
-  font-weight: bold;
-  line-height: 20vh;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.c8 {
-  border-color: hsla(0,0%,0%,0.2);
-  border-style: solid;
-  border-width: 0 0 0 0;
-  color: hsla(6,59%,50%,1);
-  font-size: 16vh;
-  font-weight: bold;
-  line-height: 20vh;
-  text-align: center;
-  text-transform: uppercase;
-}
-
+exports[`components:App renders the App with a blank game board and nine squares 1`] = `
 .c0 {
   display: grid;
   font-family: 'Verdana',sans-serif;
@@ -593,188 +411,129 @@ exports[`components:App matches the snapshot 1`] = `
 }
 
 <div
-  class="c0"
+  className="c0"
 >
-  <div
-    class="c1"
-  >
-    <div
-      class="c2"
-    >
-      x
-    </div>
-    <div
-      class="c3"
-    >
-      o
-    </div>
-    <div
-      class="c4"
-    >
-      x
-    </div>
-    <div
-      class="c3"
-    >
-      o
-    </div>
-    <div
-      class="c2"
-    >
-      x
-    </div>
-    <div
-      class="c5"
-    >
-      o
-    </div>
-    <div
-      class="c6"
-    >
-      x
-    </div>
-    <div
-      class="c7"
-    >
-      o
-    </div>
-    <div
-      class="c8"
-    >
-      x
-    </div>
-  </div>
+  <Board>
+    <Square
+      handleClick={[Function]}
+      index={0}
+      key="0"
+    />
+    <Square
+      handleClick={[Function]}
+      index={1}
+      key="1"
+    />
+    <Square
+      handleClick={[Function]}
+      index={2}
+      key="2"
+    />
+    <Square
+      handleClick={[Function]}
+      index={3}
+      key="3"
+    />
+    <Square
+      handleClick={[Function]}
+      index={4}
+      key="4"
+    />
+    <Square
+      handleClick={[Function]}
+      index={5}
+      key="5"
+    />
+    <Square
+      handleClick={[Function]}
+      index={6}
+      key="6"
+    />
+    <Square
+      handleClick={[Function]}
+      index={7}
+      key="7"
+    />
+    <Square
+      handleClick={[Function]}
+      index={8}
+      key="8"
+    />
+  </Board>
+</div>
+`;
+
+exports[`components:App renders the App with a game board three moves: center, top-left, top-right 1`] = `
+.c0 {
+  display: grid;
+  font-family: 'Verdana',sans-serif;
+  grid-template-areas: 'board';
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+}
+
+<div
+  className="c0"
+>
+  <Board>
+    <Square
+      index={0}
+      key="0"
+      player="o"
+    />
+    <Square
+      handleClick={[Function]}
+      index={1}
+      key="1"
+    />
+    <Square
+      index={2}
+      key="2"
+      player="x"
+    />
+    <Square
+      handleClick={[Function]}
+      index={3}
+      key="3"
+    />
+    <Square
+      index={4}
+      key="4"
+      player="x"
+    />
+    <Square
+      handleClick={[Function]}
+      index={5}
+      key="5"
+    />
+    <Square
+      handleClick={[Function]}
+      index={6}
+      key="6"
+    />
+    <Square
+      handleClick={[Function]}
+      index={7}
+      key="7"
+    />
+    <Square
+      handleClick={[Function]}
+      index={8}
+      key="8"
+    />
+  </Board>
 </div>
 `;
 ```
 
-Looking good. Let's do a commit:
+You should see one board that's empty (every Square has a `handleClick` function), and another in which three squares are played (`player` set to 'x' or 'o', no `handleClick` function).
+
+That's enough for this time. We'll add state next. Meanwhile, let's do a commit:
 
 ```bash
 git add -A
-git commit -m "Add remaining snapshot tests"
-git push
-```
-
-## Test coverage
-
-Jest has a built-in tool (Istanbul) that allows us to check our code to see how thorough our test coverage is. We can run it with the `--coverage` flag thus:
-
-```bash
-yarn test --coverage
-```
-
-This will run the tests and the coverage tool, then stop. We won't be left in watch mode, in other words.
-
-Here's what our output should look like currently:
-
-![First run coverage](./assets/first-run-coverage.png)
-
-As you can see, our `App`, `Board`, and `Square` components are all well tested. Our `index.js` file and the mysterious `registerServiceWorker.js` file, not so much.
-
-But if you check the `src/index.js` file you'll see that it's really kind of all-or-nothing. If everything else works, and the ReactDOM `render` method works, then it should work. So we're not going to bother with testing that file. As for the `src/registerServiceWorker.js` file, we won't test that either. But all that red looks awful, doesn't it? And our `src/components/index.js` file has nothing but imports and exports in it, so that's not much worth testing either.
-
-Let's take them out of the tests entirely. Update your `package.json` file to add these lines:
-
-```json
-  "jest": {
-    "collectCoverageFrom": [
-      "!src/serviceWorker.js",
-      "!src/index.js",
-      "src/**/*.{js,jsx}",
-      "!<rootDir>/node_modules/"
-    ],
-    "snapshotSerializers": [
-      "enzyme-to-json/serializer"
-    ]
-  }
-```
-
-The `!` means no or not, so this says that the coverage tool should _ignore_ the `src/registerServiceWorker.js` file, the `src/index.js` file, the `src/components/index.js` file, and the `node_modules` folder, and that it _should_ check all the `js` or `jsx` files in `src` and all its subfolders.
-
-Your full `package.json` file should look like this now:
-
-```json
-{
-  "name": "tic-tac-toe",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "ramda": "^0.26.1",
-    "ramda-adjunct": "^2.14.0",
-    "react": "^16.7.0",
-    "react-dom": "^16.7.0",
-    "react-redux": "^6.0.0",
-    "react-router": "^4.3.1",
-    "react-scripts": "2.1.3",
-    "redux": "^4.0.1",
-    "redux-devtools-extension": "^2.13.8",
-    "redux-observable": "^1.0.0",
-    "rxjs": "^6.4.0",
-    "rxjs-compat": "^6.4.0",
-    "styled-components": "^4.1.3"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "format": "prettier-standard 'src/**/*.js'",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "src/**/*.js": [
-      "prettier-standard",
-      "git add"
-    ]
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ],
-  "devDependencies": {
-    "enzyme": "^3.8.0",
-    "enzyme-adapter-react-16": "^1.8.0",
-    "enzyme-to-json": "^3.3.5",
-    "husky": "^1.3.1",
-    "jest-enzyme": "^7.0.1",
-    "jest-styled-components": "^6.3.1",
-    "lint-staged": "^8.1.3",
-    "prettier-standard": "^9.1.1",
-    "react-test-renderer": "^16.7.0",
-    "redux-mock-store": "^1.5.3"
-  },
-  "jest": {
-    "collectCoverageFrom": [
-      "!src/serviceWorker.js",
-      "!src/index.js",
-      "src/**/*.{js,jsx}",
-      "!<rootDir>/node_modules/"
-    ],
-    "snapshotSerializers": [
-      "enzyme-to-json/serializer"
-    ]
-  }
-}
-```
-
-Let's save that and re-run `yarn test --coverage`:
-
-![Clean coverage](./assets/clean-coverage.png)
-
-OK, we're good to go on tests for the moment. Let's do another commit:
-
-```bash
-git add -A
-git commit -m "Update the test coverage configuration"
+git commit -m "Add click handler to squares, update snapshots"
 git push
 ```

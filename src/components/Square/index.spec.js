@@ -4,6 +4,16 @@ import Square from './'
 import { shallow } from 'enzyme'
 
 describe('components:Square', () => {
+  it('matches the snapshot when a click handler is provided', () => {
+    expect(
+      toJson(
+        shallow(<Square handleClick={() => null} index={0} />)
+          .first()
+          .render()
+      )
+    ).toMatchSnapshot()
+  })
+
   it('matches the snapshot for player O in the top left square', () => {
     expect(
       toJson(
