@@ -316,8 +316,7 @@ We also want to be able to retrieve our moves array from the state. We'll make a
 Create a `src/state/selectors` folder and a `src/state/selectors/index.spec.js` file in it. Then add our test to the `index.spec.js` file:
 
 ```javascript
-// src/state/selectors/index.spec.js
-import { getMoves } from '.'
+import { getMoves } from './'
 
 describe('state:selectors', () => {
   describe('getMoves', () => {
@@ -334,25 +333,12 @@ describe('state:selectors', () => {
 This fails the test. Now let's add the code in `src/state/selectors/index.js` to make it pass:
 
 ```javascript
-// src/state/selectors/index.js
 export function getMoves ({ moves }) {
   return moves
 }
 ```
 
-Finally, let's update our `src/state/index.js` file to import and export our selectors:
-
-```javascript
-// src/state/index.js
-import { squareClicked } from './actions'
-import { SQUARE_CLICKED } from './constants'
-import { initialState, rootReducer } from './reducers'
-import { getMoves } from './selectors'
-
-export { getMoves, initialState, rootReducer, SQUARE_CLICKED, squareClicked }
-```
-
-Tough one, eh? And the tests pass and coverage is 100%. Let's commit!
+Tough one, eh? And the tests pass and coverage for the state functions is 100%. Let's commit!
 
 ```bash
 git add -A
@@ -377,8 +363,7 @@ Our Redux store will wrap up our state and provide three methods for manipulatin
 On the basis of this, we can write our test:
 
 ```javascript
-// src/state/store/index.spec.js
-import configureStore from '.'
+import configureStore from './'
 
 describe('state:store', () => {
   describe('configureStore', () => {
@@ -394,10 +379,8 @@ describe('state:store', () => {
 That fails, of course. Next, we'll create our store to make the test pass. In `src/state/store/index.js`, put:
 
 ```javascript
-// src/state/store/index.js
 import { createStore } from 'redux'
-
-import { rootReducer } from '..'
+import { rootReducer } from '../reducers'
 
 export default function configureStore () {
   return createStore(rootReducer)
