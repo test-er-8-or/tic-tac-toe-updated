@@ -288,29 +288,6 @@ export const SQUARE_CLICKED = 'SQUARE_CLICKED'
 
 You may have noticed that I like to keep things in alphabetical order. This makes it easier to find things when our files get a bit larger and more complex.
 
-We'll want to add this to our `src/state/index.js` imports and exports:
-
-```javascript
-// src/state/index.js
-import { squareClicked } from './actions'
-import { GAME_OVER, SQUARE_CLICKED } from './constants'
-import { initialState, rootReducer } from './reducers'
-import { getMoves } from './selectors'
-import configureStore from './store'
-
-export {
-  configureStore,
-  GAME_OVER,
-  getMoves,
-  initialState,
-  rootReducer,
-  SQUARE_CLICKED,
-  squareClicked
-}
-```
-
-Again, note that my exports are alphabetised, and my imports are alphabetised _by filename_, so they align with the files in the navigation tree in my VSCode editor. You may find this a bit much, but I find it makes finding things easier when I come back to my code later.
-
 What will our state look like after the above array of winning combinations is returned from our `getWins` function. We want to store the winning squares and the winning player, right? So why not something like this:
 
 ```javascript
@@ -348,9 +325,8 @@ I chose the double win here to show that we only need to store the winning squar
 So let's create our action creator test first. Change `src/state/actions/index.spec.js` to this:
 
 ```javascript
-// src/state/actions/index.spec.js
-import { gameOver, squareClicked } from '.'
-import { GAME_OVER, SQUARE_CLICKED } from '..'
+import { GAME_OVER, SQUARE_CLICKED } from '../constants'
+import { gameOver, squareClicked } from './'
 
 describe('state:actions', () => {
   describe('gameOver', () => {
@@ -388,8 +364,7 @@ describe('state:actions', () => {
 We'll keep the action simple, with just `squares` and `player`. Run the tests with `yarn test` and it will fail, of course. Now let's add the `gameOver` action creator to make this test pass. In `src/state/actions/index.js`:
 
 ```javascript
-// src/state/actions/index.js
-import { GAME_OVER, SQUARE_CLICKED } from '..'
+import { GAME_OVER, SQUARE_CLICKED } from '../constants'
 
 function gameOver (squares, player) {
   return {
@@ -415,29 +390,7 @@ function squareClicked (square) {
 export { gameOver, squareClicked }
 ```
 
-And now the tests pass. Add it to our `src/state/index.js` imports and exports:
-
-```javascript
-// src/state/index.js
-import { gameOver, squareClicked } from './actions'
-import { GAME_OVER, SQUARE_CLICKED } from './constants'
-import { initialState, rootReducer } from './reducers'
-import { getMoves } from './selectors'
-import configureStore from './store'
-
-export {
-  configureStore,
-  GAME_OVER,
-  gameOver,
-  getMoves,
-  initialState,
-  rootReducer,
-  SQUARE_CLICKED,
-  squareClicked
-}
-```
-
-And we're good to go. But we'll need to consume this action in the reducer, so let's do that next, after a commit:
+And now the tests pass. And we're good to go. But we'll need to consume this action in the reducer, so let's do that next, after a commit:
 
 ```bash
 git add -A
