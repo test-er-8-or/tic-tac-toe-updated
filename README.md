@@ -220,7 +220,7 @@ And run the tests with `yarn test`.
 
 Now `src/components/Square/__snapshots__/index.spec.js.snap` looks like this:
 
-```javascript
+```jsx
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`components:Square matches the snapshot 1`] = `<StyledSquare />`;
@@ -228,9 +228,14 @@ exports[`components:Square matches the snapshot 1`] = `<StyledSquare />`;
 
 Not very useful, is it? That's because we've wrapped our StyledDiv in another component. Our shallow render only goes one deep! What can we do?
 
-Let's modify the test to `dive` into that component:
+Let's modify the test to render one level deeper into that component:
 
-```javascript
+```jsx
+import * as React from 'react'
+
+import Square from './'
+import { shallow } from 'enzyme'
+
 import * as React from 'react'
 
 import Square from './'
@@ -238,7 +243,13 @@ import { shallow } from 'enzyme'
 
 describe('components:Square', () => {
   it('matches the snapshot', () => {
-    expect(toJson(shallow(<Square />).dive())).toMatchSnapshot()
+    expect(
+      toJson(
+        shallow(<Square />)
+          .first()
+          .render()
+      )
+    ).toMatchSnapshot()
   })
 })
 ```
@@ -251,46 +262,20 @@ Well, of course they do! We changed the snapshot, right? That's what they're sup
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`components:Square matches the snapshot 1`] = `
-<StyledComponent
-  forwardedComponent={
-    Object {
-      "$$typeof": Symbol(react.forward_ref),
-      "attrs": Array [],
-      "componentStyle": ComponentStyle {
-        "componentId": "sc-bdVaJa",
-        "isStatic": false,
-        "rules": Array [
-          "
-  border-color: hsla(0, 0%, 0%, 0.2);
+.c0 {
+  border-color: hsla(0,0%,0%,0.2);
   border-style: solid;
-  border-width: 0 ",
-          [Function],
-          "
-    ",
-          [Function],
-          " 0;
-  color: ",
-          [Function],
-          ";
+  border-width: 0 2px 0 0;
+  color: hsla(145,63%,32%,1);
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
   text-align: center;
   text-transform: uppercase;
-",
-        ],
-      },
-      "displayName": "StyledSquare",
-      "foldedComponentIds": Array [],
-      "render": [Function],
-      "styledComponentId": "sc-bdVaJa",
-      "target": "div",
-      "toString": [Function],
-      "warnTooManyClasses": [Function],
-      "withComponent": [Function],
-    }
-  }
-  forwardedRef={null}
+}
+
+<div
+  class="c0"
 />
 `;
 ```
@@ -308,31 +293,51 @@ import { shallow } from 'enzyme'
 describe('components:Square', () => {
   it('matches the snapshot for player O in the top left square', () => {
     expect(
-      toJson(shallow(<Square player='o' index={0} />).dive())
+      toJson(
+        shallow(<Square player='o' index={0} />)
+          .first()
+          .render()
+      )
     ).toMatchSnapshot()
   })
 
   it('matches the snapshot for player X in the top left square', () => {
     expect(
-      toJson(shallow(<Square player='x' index={0} />).dive())
+      toJson(
+        shallow(<Square player='x' index={0} />)
+          .first()
+          .render()
+      )
     ).toMatchSnapshot()
   })
 
-  it('matches the snapshot for player X in the top right square', () => {
+  it('matches the snapshot for player O in the top right square', () => {
     expect(
-      toJson(shallow(<Square player='x' index={2} />).dive())
+      toJson(
+        shallow(<Square player='o' index={2} />)
+          .first()
+          .render()
+      )
     ).toMatchSnapshot()
   })
 
   it('matches the snapshot for player X in the bottom left square', () => {
     expect(
-      toJson(shallow(<Square player='x' index={6} />).dive())
+      toJson(
+        shallow(<Square player='x' index={6} />)
+          .first()
+          .render()
+      )
     ).toMatchSnapshot()
   })
 
-  it('matches the snapshot for player X in the bottom right square', () => {
+  it('matches the snapshot for player O in the bottom right square', () => {
     expect(
-      toJson(shallow(<Square player='x' index={8} />).dive())
+      toJson(
+        shallow(<Square player='o' index={8} />)
+          .first()
+          .render()
+      )
     ).toMatchSnapshot()
   })
 })
@@ -343,244 +348,104 @@ Rerun the tests, updating with `u` until they're all passing. Your `src/componen
 ```jsx
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components:Square matches the snapshot for player O in the top left square 1`] = `
-<StyledComponent
-  forwardedComponent={
-    Object {
-      "$$typeof": Symbol(react.forward_ref),
-      "attrs": Array [],
-      "componentStyle": ComponentStyle {
-        "componentId": "sc-bdVaJa",
-        "isStatic": false,
-        "rules": Array [
-          "
-  border-color: hsla(0, 0%, 0%, 0.2);
+exports[`components:Square matches the snapshot for player O in the bottom right square 1`] = `
+.c0 {
+  border-color: hsla(0,0%,0%,0.2);
   border-style: solid;
-  border-width: 0 ",
-          [Function],
-          "
-    ",
-          [Function],
-          " 0;
-  color: ",
-          [Function],
-          ";
+  border-width: 0 0 0 0;
+  color: hsla(145,63%,32%,1);
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
   text-align: center;
   text-transform: uppercase;
-",
-        ],
-      },
-      "displayName": "StyledSquare",
-      "foldedComponentIds": Array [],
-      "render": [Function],
-      "styledComponentId": "sc-bdVaJa",
-      "target": "div",
-      "toString": [Function],
-      "warnTooManyClasses": [Function],
-      "withComponent": [Function],
-    }
-  }
-  forwardedRef={null}
-  index={0}
-  player="o"
+}
+
+<div
+  class="c0"
 >
   o
-</StyledComponent>
+</div>
+`;
+
+exports[`components:Square matches the snapshot for player O in the top left square 1`] = `
+.c0 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 2px 2px 0;
+  color: hsla(145,63%,32%,1);
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+<div
+  class="c0"
+>
+  o
+</div>
+`;
+
+exports[`components:Square matches the snapshot for player O in the top right square 1`] = `
+.c0 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 0 2px 0;
+  color: hsla(145,63%,32%,1);
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+<div
+  class="c0"
+>
+  o
+</div>
 `;
 
 exports[`components:Square matches the snapshot for player X in the bottom left square 1`] = `
-<StyledComponent
-  forwardedComponent={
-    Object {
-      "$$typeof": Symbol(react.forward_ref),
-      "attrs": Array [],
-      "componentStyle": ComponentStyle {
-        "componentId": "sc-bdVaJa",
-        "isStatic": false,
-        "rules": Array [
-          "
-  border-color: hsla(0, 0%, 0%, 0.2);
+.c0 {
+  border-color: hsla(0,0%,0%,0.2);
   border-style: solid;
-  border-width: 0 ",
-          [Function],
-          "
-    ",
-          [Function],
-          " 0;
-  color: ",
-          [Function],
-          ";
+  border-width: 0 2px 0 0;
+  color: hsla(6,59%,50%,1);
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
   text-align: center;
   text-transform: uppercase;
-",
-        ],
-      },
-      "displayName": "StyledSquare",
-      "foldedComponentIds": Array [],
-      "render": [Function],
-      "styledComponentId": "sc-bdVaJa",
-      "target": "div",
-      "toString": [Function],
-      "warnTooManyClasses": [Function],
-      "withComponent": [Function],
-    }
-  }
-  forwardedRef={null}
-  index={6}
-  player="x"
->
-  x
-</StyledComponent>
-`;
+}
 
-exports[`components:Square matches the snapshot for player X in the bottom right square 1`] = `
-<StyledComponent
-  forwardedComponent={
-    Object {
-      "$$typeof": Symbol(react.forward_ref),
-      "attrs": Array [],
-      "componentStyle": ComponentStyle {
-        "componentId": "sc-bdVaJa",
-        "isStatic": false,
-        "rules": Array [
-          "
-  border-color: hsla(0, 0%, 0%, 0.2);
-  border-style: solid;
-  border-width: 0 ",
-          [Function],
-          "
-    ",
-          [Function],
-          " 0;
-  color: ",
-          [Function],
-          ";
-  font-size: 16vh;
-  font-weight: bold;
-  line-height: 20vh;
-  text-align: center;
-  text-transform: uppercase;
-",
-        ],
-      },
-      "displayName": "StyledSquare",
-      "foldedComponentIds": Array [],
-      "render": [Function],
-      "styledComponentId": "sc-bdVaJa",
-      "target": "div",
-      "toString": [Function],
-      "warnTooManyClasses": [Function],
-      "withComponent": [Function],
-    }
-  }
-  forwardedRef={null}
-  index={8}
-  player="x"
+<div
+  class="c0"
 >
   x
-</StyledComponent>
+</div>
 `;
 
 exports[`components:Square matches the snapshot for player X in the top left square 1`] = `
-<StyledComponent
-  forwardedComponent={
-    Object {
-      "$$typeof": Symbol(react.forward_ref),
-      "attrs": Array [],
-      "componentStyle": ComponentStyle {
-        "componentId": "sc-bdVaJa",
-        "isStatic": false,
-        "rules": Array [
-          "
-  border-color: hsla(0, 0%, 0%, 0.2);
+.c0 {
+  border-color: hsla(0,0%,0%,0.2);
   border-style: solid;
-  border-width: 0 ",
-          [Function],
-          "
-    ",
-          [Function],
-          " 0;
-  color: ",
-          [Function],
-          ";
+  border-width: 0 2px 2px 0;
+  color: hsla(6,59%,50%,1);
   font-size: 16vh;
   font-weight: bold;
   line-height: 20vh;
   text-align: center;
   text-transform: uppercase;
-",
-        ],
-      },
-      "displayName": "StyledSquare",
-      "foldedComponentIds": Array [],
-      "render": [Function],
-      "styledComponentId": "sc-bdVaJa",
-      "target": "div",
-      "toString": [Function],
-      "warnTooManyClasses": [Function],
-      "withComponent": [Function],
-    }
-  }
-  forwardedRef={null}
-  index={0}
-  player="x"
->
-  x
-</StyledComponent>
-`;
+}
 
-exports[`components:Square matches the snapshot for player X in the top right square 1`] = `
-<StyledComponent
-  forwardedComponent={
-    Object {
-      "$$typeof": Symbol(react.forward_ref),
-      "attrs": Array [],
-      "componentStyle": ComponentStyle {
-        "componentId": "sc-bdVaJa",
-        "isStatic": false,
-        "rules": Array [
-          "
-  border-color: hsla(0, 0%, 0%, 0.2);
-  border-style: solid;
-  border-width: 0 ",
-          [Function],
-          "
-    ",
-          [Function],
-          " 0;
-  color: ",
-          [Function],
-          ";
-  font-size: 16vh;
-  font-weight: bold;
-  line-height: 20vh;
-  text-align: center;
-  text-transform: uppercase;
-",
-        ],
-      },
-      "displayName": "StyledSquare",
-      "foldedComponentIds": Array [],
-      "render": [Function],
-      "styledComponentId": "sc-bdVaJa",
-      "target": "div",
-      "toString": [Function],
-      "warnTooManyClasses": [Function],
-      "withComponent": [Function],
-    }
-  }
-  forwardedRef={null}
-  index={2}
-  player="x"
+<div
+  class="c0"
 >
   x
-</StyledComponent>
+</div>
 `;
 ```
 
@@ -590,7 +455,7 @@ This isn't really the most effective way to do this, but it's a start. If we hav
 
 ## Finishing up
 
-Let's go back to our `App` test and do a `dive()` to make sure our CSS is being tested. In `src/components/App/index.js`:
+Let's go back to our `App` test and do a `first().render()` to make sure our CSS is being tested. In `src/components/App/index.js`:
 
 ```jsx
 import * as React from 'react'
@@ -600,97 +465,186 @@ import { shallow } from 'enzyme'
 
 describe('components:App', () => {
   it('matches the snapshot', () => {
-    expect(toJson(shallow(<App />).dive())).toMatchSnapshot()
+    expect(
+      toJson(
+        shallow(<App />)
+          .first()
+          .render()
+      )
+    ).toMatchSnapshot()
   })
 })
 ```
 
 Update the tests with `u` and check the `src/components/App/__snapshots__/index.spec.js.snap` file and you should see:
 
-```javascript
+```jsx
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`components:App matches the snapshot 1`] = `
-<StyledComponent
-  forwardedComponent={
-    Object {
-      "$$typeof": Symbol(react.forward_ref),
-      "attrs": Array [],
-      "componentStyle": ComponentStyle {
-        "componentId": "sc-htpNat",
-        "isStatic": true,
-        "rules": Array [
-          "
+.c1 {
+  -webkit-align-self: center;
+  -ms-flex-item-align: center;
+  align-self: center;
   display: grid;
-  font-family: 'Verdana', sans-serif;
+  grid-area: board;
+  grid-gap: 0;
+  grid-template-areas: 'zero one two' 'three four five' 'six seven eight';
+  grid-template-columns: 20vh 20vh 20vh;
+  grid-template-rows: 20vh 20vh 20vh;
+  height: 60vh;
+  justify-self: center;
+  margin: auto;
+  width: 60vh;
+}
+
+.c2 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 2px 2px 0;
+  color: hsla(6,59%,50%,1);
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.c3 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 2px 2px 0;
+  color: hsla(145,63%,32%,1);
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.c4 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 0 2px 0;
+  color: hsla(6,59%,50%,1);
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.c5 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 0 2px 0;
+  color: hsla(145,63%,32%,1);
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.c6 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 2px 0 0;
+  color: hsla(6,59%,50%,1);
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.c7 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 2px 0 0;
+  color: hsla(145,63%,32%,1);
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.c8 {
+  border-color: hsla(0,0%,0%,0.2);
+  border-style: solid;
+  border-width: 0 0 0 0;
+  color: hsla(6,59%,50%,1);
+  font-size: 16vh;
+  font-weight: bold;
+  line-height: 20vh;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.c0 {
+  display: grid;
+  font-family: 'Verdana',sans-serif;
   grid-template-areas: 'board';
   height: 100vh;
   margin: 0;
   padding: 0;
   width: 100vw;
-",
-        ],
-      },
-      "displayName": "StyledApp",
-      "foldedComponentIds": Array [],
-      "render": [Function],
-      "styledComponentId": "sc-htpNat",
-      "target": "div",
-      "toString": [Function],
-      "warnTooManyClasses": [Function],
-      "withComponent": [Function],
-    }
-  }
-  forwardedRef={null}
+}
+
+<div
+  class="c0"
 >
-  <Board>
-    <Square
-      index={0}
-      key="0"
-      player="x"
-    />
-    <Square
-      index={1}
-      key="1"
-      player="o"
-    />
-    <Square
-      index={2}
-      key="2"
-      player="x"
-    />
-    <Square
-      index={3}
-      key="3"
-      player="o"
-    />
-    <Square
-      index={4}
-      key="4"
-      player="x"
-    />
-    <Square
-      index={5}
-      key="5"
-      player="o"
-    />
-    <Square
-      index={6}
-      key="6"
-      player="x"
-    />
-    <Square
-      index={7}
-      key="7"
-      player="o"
-    />
-    <Square
-      index={8}
-      key="8"
-      player="x"
-    />
-  </Board>
-</StyledComponent>
+  <div
+    class="c1"
+  >
+    <div
+      class="c2"
+    >
+      x
+    </div>
+    <div
+      class="c3"
+    >
+      o
+    </div>
+    <div
+      class="c4"
+    >
+      x
+    </div>
+    <div
+      class="c3"
+    >
+      o
+    </div>
+    <div
+      class="c2"
+    >
+      x
+    </div>
+    <div
+      class="c5"
+    >
+      o
+    </div>
+    <div
+      class="c6"
+    >
+      x
+    </div>
+    <div
+      class="c7"
+    >
+      o
+    </div>
+    <div
+      class="c8"
+    >
+      x
+    </div>
+  </div>
+</div>
 `;
 ```
 
@@ -725,9 +679,8 @@ Let's take them out of the tests entirely. Update your `package.json` file to ad
 ```json
   "jest": {
     "collectCoverageFrom": [
-      "!src/registerServiceWorker.js",
+      "!src/serviceWorker.js",
       "!src/index.js",
-      "!src/components/index.js",
       "src/**/*.{js,jsx}",
       "!<rootDir>/node_modules/"
     ],
@@ -747,50 +700,63 @@ Your full `package.json` file should look like this now:
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "ramda": "^0.25.0",
-    "ramda-adjunct": "^2.6.0",
-    "react": "^16.3.1",
-    "react-dom": "^16.3.1",
-    "react-redux": "^5.0.7",
-    "react-router": "^4.2.0",
-    "react-scripts": "1.1.4",
-    "redux": "^3.7.2",
-    "redux-observable": "^0.18.0",
-    "rxjs": "^5.5.10",
-    "styled-components": "^3.2.5"
+    "ramda": "^0.26.1",
+    "ramda-adjunct": "^2.14.0",
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
+    "react-redux": "^6.0.0",
+    "react-router": "^4.3.1",
+    "react-scripts": "2.1.3",
+    "redux": "^4.0.1",
+    "redux-devtools-extension": "^2.13.8",
+    "redux-observable": "^1.0.0",
+    "rxjs": "^6.4.0",
+    "rxjs-compat": "^6.4.0",
+    "styled-components": "^4.1.3"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "format": "prettier-standard 'src/**/*js'",
-    "precommit": "lint-staged",
+    "format": "prettier-standard 'src/**/*.js'",
+    "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-  "lint-staged": {
-    "linters": {
-      "src/**/*.js": [
-        "prettier-standard",
-        "git add"
-      ]
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
     }
   },
+  "lint-staged": {
+    "src/**/*.js": [
+      "prettier-standard",
+      "git add"
+    ]
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
   "devDependencies": {
-    "enzyme": "^3.3.0",
-    "enzyme-adapter-react-16": "^1.1.1",
-    "enzyme-to-json": "^3.3.3",
-    "husky": "^0.14.3",
-    "jest-enzyme": "^6.0.0",
-    "jest-styled-components": "^5.0.1",
-    "lint-staged": "^7.0.4",
-    "prettier-standard": "^8.0.1",
-    "react-test-renderer": "^16.3.1"
+    "enzyme": "^3.8.0",
+    "enzyme-adapter-react-16": "^1.8.0",
+    "enzyme-to-json": "^3.3.5",
+    "husky": "^1.3.1",
+    "jest-enzyme": "^7.0.1",
+    "jest-styled-components": "^6.3.1",
+    "lint-staged": "^8.1.3",
+    "prettier-standard": "^9.1.1",
+    "react-test-renderer": "^16.7.0",
+    "redux-mock-store": "^1.5.3"
   },
   "jest": {
     "collectCoverageFrom": [
-      "!src/registerServiceWorker.js",
+      "!src/serviceWorker.js",
       "!src/index.js",
-      "!src/components/index.js",
       "src/**/*.{js,jsx}",
       "!<rootDir>/node_modules/"
     ],

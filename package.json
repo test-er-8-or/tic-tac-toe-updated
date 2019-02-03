@@ -55,5 +55,16 @@
     "prettier-standard": "^9.1.1",
     "react-test-renderer": "^16.7.0",
     "redux-mock-store": "^1.5.3"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "!src/serviceWorker.js",
+      "!src/index.js",
+      "src/**/*.{js,jsx}",
+      "!<rootDir>/node_modules/"
+    ],
+    "snapshotSerializers": [
+      "enzyme-to-json/serializer"
+    ]
   }
 }
