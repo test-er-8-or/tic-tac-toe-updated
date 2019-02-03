@@ -154,8 +154,7 @@ Now, all we need to do is filter on those patterns and return any in which all t
 Let's create yet another utility function, this one called `getWins`. It will take the current board and return an array of the winning pattern(s), if any. We'll need a `src/utilities/getWins` folder and a `src/utilities/getWins/index.spec.js` file. We'll write a test:
 
 ```javascript
-// src/utilities/getWins/index.spec.js
-import getWins from '.'
+import getWins from './'
 
 describe('utilities:getWins', () => {
   it('returns a array with the winning pattern when there is a single win', () => {
@@ -172,7 +171,6 @@ That's a win along the diagonal from top right to bottom left. Note that the `ge
 We will run filter on our _patterns_, comparing to the board in success. IF the first square is not `undefined` AND the first square belongs to the same player as the second AND the second square belongs to the same player as the third, THEN we will include that win pattern in the output. Create `src/utilities/getWins/index.js` and add this code:
 
 ```javascript
-// src/utilities/getWins/index.js
 import { filter } from 'ramda'
 
 const patterns = [
@@ -200,8 +198,7 @@ export default function getWins (board) {
 Great! Let's extend our tests to include a board that has no win (empty array out) and one with two wins. Here's our new `src/utilities/getWins/index.spec.js`:
 
 ```javascript
-// src/utilities/getWins/index.spec.js
-import getWins from '.'
+import getWins from './'
 
 describe('utilities:getWins', () => {
   it('returns an empty array when there are no wins', () => {
@@ -237,18 +234,7 @@ describe('utilities:getWins', () => {
 })
 ```
 
-That should cover us, and indeed test coverage is 100%. Now let's add our `getWins` function to our utilities import/export in `src/utilities/index.js`:
-
-```javascript
-// src/utilities/index.js
-import getBoard from './getBoard'
-import getPlayer from './getPlayer'
-import getWins from './getWins'
-
-export { getBoard, getPlayer, getWins }
-```
-
-Check our tests, and time for a commit.
+That should cover us, and indeed test coverage is 100%. Check our tests, and time for a commit.
 
 ```bash
 git add -A
