@@ -203,7 +203,7 @@ We talked earlier about having a `moves` array that might look like this: `[4, 0
 
 Let's start by creating a `src/utilities` folder, and inside that a `src/utilities/getPlayer` folder, and inside that an `index.spec.js` file. That's right, we're going to write the tests first. So in the `src/utilities/getPlayer/index.spec.js` file, add:
 
-```javascript
+```jsx
 import getPlayer from '.'
 
 describe('utilities:getPlayer', () => {
@@ -256,27 +256,6 @@ Finally, if we haven't already returned `undefined`, then we check whether the m
 Run the tests on `getPlayer` again, and they should all pass.
 
 Keeping our utility functions small and simple makes testing and debugging much easier. This function has a variable assignment, a guard (in case there is no move), and a result, which depends on a simple ternary operator.
-
-Let's add a `src/utilities/index.js` file that imports and re-exports utility functions. Add this code:
-
-```javascript
-import getPlayer from './getPlayer'
-
-export { getPlayer }
-```
-
-And we don't need to include this in our test coverage, so we'll add that to our `package.json` file:
-
-```json
-"collectCoverageFrom": [
-  "!src/registerServiceWorker.js",
-  "!src/index.js",
-  "!src/components/index.js",
-  "!src/utilities/index.js",
-  "src/**/*.{js,jsx}",
-  "!<rootDir>/node_modules/"
-],
-```
 
 Now if we run `yarn test --coverage`, we should see:
 
