@@ -60,6 +60,7 @@
     "collectCoverageFrom": [
       "!src/serviceWorker.js",
       "!src/index.js",
+      "!src/state/constants.js",
       "src/**/*.{js,jsx}",
       "!<rootDir>/node_modules/"
     ],
