@@ -498,8 +498,7 @@ git push
 We still need a way to get these values back out of our state, and that means selectors. We'll add a couple of tests to `src/state/selectors/index.spec.js` to test that our selectors work:
 
 ```javascript
-// src/state/selectors/index.spec.js
-import { getMoves, getWinningPlayer, getWinningSquares } from '.'
+import { getMoves, getWinningPlayer, getWinningSquares } from './'
 
 describe('state:selectors', () => {
   describe('getMoves', () => {
@@ -534,7 +533,6 @@ describe('state:selectors', () => {
 (Note the second and third tests.) These fail as expected, so we update `src/state/selectors/index.js` to add the selectors to make the tests pass:
 
 ```javascript
-// src/state/selectors/index.js
 export function getMoves ({ moves }) {
   return moves
 }
@@ -548,29 +546,7 @@ export function getWinningSquares ({ winningSquares }) {
 }
 ```
 
-Pretty simple, eh? Tests pass, and because we've added new exports, we need to update the `src/state/index.js` file:
-
-```javascript
-// src/state/index.js
-import { gameOver, squareClicked } from './actions'
-import { GAME_OVER, SQUARE_CLICKED } from './constants'
-import { initialState, rootReducer } from './reducers'
-import { getMoves, getWinningPlayer, getWinningSquares } from './selectors'
-import configureStore from './store'
-
-export {
-  configureStore,
-  GAME_OVER,
-  gameOver,
-  getMoves,
-  getWinningPlayer,
-  getWinningSquares,
-  initialState,
-  rootReducer,
-  SQUARE_CLICKED,
-  squareClicked
-}
-```
+Pretty simple, eh? Tests pass.
 
 Now we can create an action on game over, update the state with the winning squares and player, and retrieve those values from the state. What remains is to somehow trigger the `getWins` function and, if it returns one or two winning combinations, or there are no more squares to play, then we want to dispatch our action and update our state accordingly. We'll get to that next.
 
