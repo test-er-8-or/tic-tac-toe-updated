@@ -105,8 +105,7 @@ Next we need a function that will accept that action and our current state objec
 So create a `src/state/reducers` folder, and an `index.spec.js` file in it. And then write this test:
 
 ```javascript
-// src/state/reducers/index.spec.js
-import { rootReducer } from '.'
+import { rootReducer } from './'
 
 describe('state:reducers', () => {
   describe('rootReducer', () => {
@@ -122,7 +121,6 @@ describe('state:reducers', () => {
 You may have noticed that the tests in watch mode only run on files chagned since the last commit, so we don't really need to filter them. Run the tests with `yarn test` and you should see the reducers test fail. Now we need to make it pass. So create a `src/state/reducers/index.js` file and add the following:
 
 ```javascript
-// src/state/reducers/index.js
 function rootReducer (state, action) {
   switch (action && action.type) {
     default:
@@ -138,9 +136,8 @@ Ha, ha. This couldn't be much simpler! It takes a state and an action, switches 
 Let's create a new test first. Here's our updated `src/state/reducers/index.spec.js`:
 
 ```javascript
-// src/state/reducers/index.spec.js
-import { rootReducer } from '.'
-import { squareClicked } from '..'
+import { rootReducer } from './'
+import { squareClicked } from '../actions'
 
 describe('state:reducer', () => {
   describe('rootReducer', () => {
@@ -170,10 +167,8 @@ That's going to fail something like this:
 As you can see, it did what we'd expect: returned the state unchanged. So let's fix that. Here is our new `src/state/reducers/index.js` file:
 
 ```javascript
-// src/state/reducers/index.js
+import { SQUARE_CLICKED } from '../constants'
 import { isUndefined } from 'ramda-adjunct'
-
-import { SQUARE_CLICKED } from '..'
 
 const initialState = { moves: [] }
 
@@ -208,26 +203,13 @@ Here we:
 
 Our test passes with flying colours, so we now have a `moves` array in state that updates.
 
-Now let's update `src/state/index.js`:
-
-```javascript
-// src/state/index.js
-import { squareClicked } from './actions'
-import { SQUARE_CLICKED } from './constants'
-import { initialState, rootReducer } from './reducers'
-
-export { initialState, rootReducer, SQUARE_CLICKED, squareClicked }
-```
-
-See the pattern emerging?
-
 So let's run our coverage tests again just for fun: `yarn test --coverage`. Here's what we should see:
 
 ![Reducer coverage fails](./assets/reducer-fail.png)
 
-Pay no attention to the App line&mdash;we'll fix that later (it's because we're not finished there). But what's going on with our reducer? We have two uncovered lines: 7 and 12.
+Pay no attention to the App line&mdash;we'll fix that later (it's because we're not finished there). But what's going on with our reducer? We have two uncovered lines: 6 and 11.
 
-Here is line 7:
+Here is line 6:
 
 ```javascript
 function rootReducer (state = initialState, { payload = {}, type }) {
@@ -236,11 +218,11 @@ function rootReducer (state = initialState, { payload = {}, type }) {
 We've tested the reducer with and without a payload, so that can't be it. But have we tested that the state defaults to the `initialState`? No, we haven't. So let's add a test for that. We'll need to import the initialState, too. Here's our updated `src/state/reducers/index.spec.js`:
 
 ```javascript
-// src/state/reducers/index.spec.js
-import { initialState, rootReducer } from '.'
-import { squareClicked } from '..'
+import { initialState, rootReducer } from './'
 
-describe('state:reducers', () => {
+import { squareClicked } from '../actions'
+
+describe('state:reducer', () => {
   describe('rootReducer', () => {
     it('defaults to the initialState', () => {
       expect(rootReducer(undefined, {})).toBe(initialState)
@@ -265,22 +247,22 @@ describe('state:reducers', () => {
 })
 ```
 
-Run our coverage check and line 7 has been handled. Now for line 12. It looks like this:
+Run our coverage check and line 6 has been handled. Now for line 11. It looks like this:
 
 ```javascript
-moves: isUndefined(payload.square)
-  ? state.moves
-  : [...state.moves, payload.square]
+        moves: isUndefined(payload.square)
+          ? state.moves
+          : [...state.moves, payload.square]
 ```
 
 We need to add a test that passes the action, but without a square. Here's our new `src/state/reducers/index.spec.js` file. The new test is at the bottom:
 
 ```javascript
-// src/state/reducers/index.spec.js
-import { initialState, rootReducer } from '.'
-import { squareClicked } from '..'
+import { initialState, rootReducer } from './'
 
-describe('state:reducers', () => {
+import { squareClicked } from '../actions'
+
+describe('state:reducer', () => {
   describe('rootReducer', () => {
     it('defaults to the initialState', () => {
       expect(rootReducer(undefined, {})).toBe(initialState)
